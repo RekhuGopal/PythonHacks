@@ -12,7 +12,7 @@ def checkcriteria(arr):
     	
 # Find combinations 		
 def bubbleSort(arr): 
-    matches = 0
+    matches = 1
     n = len(arr) 
     # Traverse through all array elements 
     for i in range(n): 
@@ -39,4 +39,4 @@ def createAnArray(m):
 arr = createAnArray(4)
 print (arr)
 outputvalue = bubbleSort(arr) 
-print ("matches found are {}".format(outputvalue+1 ))  
+print ("matches found are {}".format(outputvalue))  
