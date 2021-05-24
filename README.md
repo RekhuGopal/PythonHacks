@@ -1,2 +1,4 @@
 # PythonHacks
-This repo contains some solved python hacker codes 
+This repo contains some solved python codes dedicated for below two cases.
+1)  Some solved hacker code , which developer has tp solver during hiring process.
+2)  AWS Cloud boto3 module usage - for Lambda and any other services aimed at automation.
