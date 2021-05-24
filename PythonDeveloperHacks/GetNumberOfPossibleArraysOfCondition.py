@@ -35,8 +35,11 @@ def createAnArray(m):
 		print ("Given number is out of range")
 	return createdarray
 
-# Driver code to test above 
-arr = createAnArray(4)
+# Driver code to test above
+userintinput = input("Enter a number >1 and <20 to create an array and to find possible arrays condition i%arr[i] == 0 or arr[i]%i == 0 :")
+userintinput = int(userintinput)
+print("Number entered by you is: {}".format(userintinput) )
+arr = createAnArray(userintinput)
 print (arr)
 outputvalue = bubbleSort(arr) 
 print ("matches found are {}".format(outputvalue))  

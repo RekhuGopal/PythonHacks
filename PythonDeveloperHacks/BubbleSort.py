@@ -10,12 +10,10 @@ def bubbleSort(arr):
             # than the next element 
             if arr[j] > arr[j+1] : 
                 arr[j], arr[j+1] = arr[j+1], arr[j] 
-                print ("--:Array:--")
-                for i in range(len(arr)): 
-                    print ("%d" %arr[i])
 
 # Driver code to test above 
-arr = [1,2,3] 
+# Your array here
+arr = [12,254,424572453] 
 bubbleSort(arr) 
 print ("Sorted array outside is:") 
 for i in range(len(arr)): 
