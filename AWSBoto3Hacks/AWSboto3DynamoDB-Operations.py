@@ -173,28 +173,32 @@ if __name__ == '__main__':
     print("Table status:{}".format(movie_table))
 
     time.sleep(30)
-
+    
     ## Insert in to DynamoDB
     movie_resp = put_movie("The Big New Movie", 2015,"Nothing happens at all.", 0)
     print("Insert in to DynamoDB succeeded............")
     pprint(movie_resp, sort_dicts=False)
 
+    
     ## Get an item from DynamoDB
     movie = get_movie("The Big New Movie", 2015,)
     if movie:
-        print("Get an item from DynamoDB succeeded............")
-        pprint(movie, sort_dicts=False)
+       print("Get an item from DynamoDB succeeded............")
+       pprint(movie, sort_dicts=False)
 
+    
     ## Update and item in  DynamoDB
     update_response = update_movie( "The Big New Movie", 2015, 5.5, "Everything happens all at once.",["Larry", "Moe", "Curly"])
     print("Update and item in  DynamoDB succeeded............")
     pprint(update_response, sort_dicts=False)
-
+ 
+    
     ## Increment an Atomic Counter in DynamoDB
     update_response = increase_rating("The Big New Movie", 2015, 1)
     print("Increment an Atomic Counter in DynamoDB succeeded............")
     pprint(update_response, sort_dicts=False)
 
+    
     ## Delete an Item in DynamoDB table
     delete_response = delete_underrated_movie("The Big New Movie", 2015, 7.5)
     if delete_response:
