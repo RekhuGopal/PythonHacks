@@ -1,47 +1,60 @@
 import boto3
 from trp import Document
 
-#Text detection from documents:
-# Document
+# S3 Bucket Data
 s3BucketName = "demotextractcqpocs"
-documentName = "Test2.JPG"
+PlaindocumentName = "Test2.JPG"
+FormdocumentName = "Test3.JPG"
+TabledocumentName = "Test4.JPG"
 
 # Amazon Textract client
 textractmodule = boto3.client('textract')
 
-# Call Amazon Textract
+#1. PLAINTEXT detection from documents:
 response = textractmodule.detect_document_text(
     Document={
         'S3Object': {
             'Bucket': s3BucketName,
-            'Name': documentName
+            'Name': PlaindocumentName
         }
     })
-
-#print(response)
-
-# Print detected text
+print ('------------- Print Plaintext detected text ------------------------------')
 for item in response["Blocks"]:
     if item["BlockType"] == "LINE":
         print ('\033[92m'+item["Text"]+'\033[92m')
 
 
-# Call Amazon Textract
+#2. FORM detection from documents:
 response = textractmodule.analyze_document(
     Document={
         'S3Object': {
             'Bucket': s3BucketName,
-            'Name': documentName
+            'Name': FormdocumentName
         }
     },
     FeatureTypes=["FORMS"])
-
-#print(response)
-
 doc = Document(response)
-
+print ('------------- Print Form detected text ------------------------------')
 for page in doc.pages:
-    # Print fields
-    print("Fields:")
     for field in page.form.fields:
         print("Key: {}, Value: {}".format(field.key, field.value))
+
+
+
+#2. TABLE data detection from documents:
+response = textractmodule.analyze_document(
+    Document={
+        'S3Object': {
+            'Bucket': s3BucketName,
+            'Name': TabledocumentName
+        }
+    },
+    FeatureTypes=["TABLES"])
+doc = Document(response)
+print ('------------- Print Table detected text ------------------------------')
+for page in doc.pages:
+    for table in page.tables:
+        for r, row in enumerate(table.rows):
+            itemName  = ""
+            for c, cell in enumerate(row.cells):
+                print("Table[{}][{}] = {}".format(r, c, cell.text))
