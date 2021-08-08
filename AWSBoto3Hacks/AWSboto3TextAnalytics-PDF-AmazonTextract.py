@@ -1,6 +1,7 @@
 import boto3
 import time
 
+## Textract APIs used - "start_document_text_detection", "get_document_text_detection"
 def InvokeTextDetectJob(s3BucketName, objectName):
     response = None
     client = boto3.client('textract')
@@ -45,7 +46,7 @@ def JobResults(jobId):
                 nextToken = response['NextToken']
     return pages
 
-# Document
+# S3 Document Data
 s3BucketName = "demotextractcqpocs"
 documentName = "aws-overview.pdf"
 
