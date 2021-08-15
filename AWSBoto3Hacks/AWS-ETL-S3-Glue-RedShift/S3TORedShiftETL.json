@@ -1,0 +1,16 @@
+{
+  "detail-type": [
+    "Glue Crawler State Change"
+  ],
+  "source": [
+    "aws.glue"
+  ],
+  "detail": {
+    "crawlerName": [
+      "DataSourceS3"
+    ],
+    "state": [
+      "Succeeded"
+    ]
+  }
+}
