@@ -1,0 +1,68 @@
+Pre-Requisite-1 eksctl install on Windows 
+===========================================================================
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; iex ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+
+choco install -y eksctl
+
+==========================================================================
+
+Pre-Requisite-2 EKS Cluster
+===========================================================================
+## Create EKS cluster
+eksctl create cluster --name cqpocsefkdemo --node-type t2.large --nodes 3 --nodes-min 3 --nodes-max 5 --region us-east-1 --zones us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
+
+## Get EKS Cluster service
+eksctl get cluster --name cqpocsefkdemo --region us-east-1
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+==========================================================================
+
+EFK Configurations
+==========================================================================
+1. Create a Kubernetes namespace for monitoring tools
+==> kubectl create namespace dapr-monitoring
+ 
+2. Add the helm repo for Elastic Search
+==> helm repo add elastic https://helm.elastic.co
+==> helm repo update
+
+3. Install Elastic Search using Helm
+==> helm install elasticsearch elastic/elasticsearch -n dapr-monitoring --set replicas=1
+
+4. Install Kibana uisng Hel
+==> helm install kibana elastic/kibana -n dapr-monitoring
+
+5. Install Fluentd
+==> kubectl apply -f ./fluentd-config-map.yaml
+==> kubectl apply -f ./fluentd-dapr-with-rbac.yaml
+
+6. Ensure that Fluentd is running as a daemonset
+==> kubectl get pods -n kube-system -w
+
+7. Install Dapr with enabling JSON-formatted logs
+==> helm repo add dapr https://dapr.github.io/helm-charts/
+==> helm repo update
+===> kubectl create namespace dapr-system
+==> helm install dapr dapr/dapr --namespace dapr-system --set global.logAsJson=true
+
+8. Deploying and viewing application logs
+==> kubectl apply -f .\counter.yaml
+
+9. Search logs
+==> kubectl port-forward svc/kibana-kibana 5601 -n dapr-monitoring
+
+10. Browse
+++> http://localhost:5601
+
+11. Checking logs in Kibana
+===========================================================================
+
+## Delete EKS cluster
+===========================================================================
+eksctl delete cluster --name cqpocsefkdemo --region us-east-1
+===========================================================================
