@@ -1,0 +1,52 @@
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Have Helm installed in your VM
+helm version --short
+
+## What Kubernetes Ingress
+"Kubernetes Ingress is an API object that provides routing rules to manage external user`s access to the services in a Kubernetes cluster,
+typically via HTTPS/HTTP"
+
+
+## Create EKS cluster
+eksctl create cluster --name eksingressdemo --node-type t2.large --nodes 3 --nodes-min 3 --nodes-max 5 --region us-east-1 --zones=us-east-1a,us-east-1b,us-east-1d
+
+## Get EKS Cluster service
+eksctl get cluster --name eksingressdemo --region us-east-1
+
+## Create IAM OIDC provider
+eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster eksingressdemo --approve
+
+## Create an IAM policy called
+aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
+
+## Create a IAM role and ServiceAccount
+eksctl create iamserviceaccount --cluster eksingressdemo --namespace kube-system --name aws-load-balancer-controller --attach-policy-arn arn:aws:iam::357171621133:policy/AWSLoadBalancerControllerIAMPolicy --override-existing-serviceaccounts --approve
+
+## Install the TargetGroupBinding CRDs
+kubectl apply -k github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master
+kubectl get crd
+
+## Deploy the Helm chart
+helm repo add eks https://aws.github.io/eks-charts
+
+## Configure AWS ALB (Apllication Load Balancer) to sit infront of Ingress
+helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=eksingressdemo --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller --set image.tag="v2.2.0"
+
+kubectl -n kube-system rollout status deployment aws-load-balancer-controller
+
+## Deploy Sample Application
+kubectl apply -f .\SampleApp.yaml
+
+## Verify Ingress
+kubectl get ingress/ingress-2048 -n game-2048
+
+## Get Ingress URL
+kubectl get ingress/ingress-2048 -n game-2048 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name eksingressdemo --region us-east-1
