@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "sqlServerPrimaryName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the primary SQL Server."
+            }
+        },
+        "partnerServers": {
+            "type": "string",
+            "metadata": {
+                "description": "The list of names of the secondary SQL Server."
+            }
+        },
+        "partnerResourceGroups": {
+            "type": "string",
+            "metadata": {
+                "description": "The list of names of the secondary SQL Server Resource Groups."
+            }
+        },
+        "sqlFailoverGroupName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the failover group."
+            }
+        },
+        "sqlDatabaseName": {
+            "type": "string",
+            "metadata": {
+                "description": "The name of the SQL Database."
+            }
+        },
+        "location": {
+            "type": "string",
+            "defaultValue": "[resourceGroup().location]",
+            "metadata": {
+                "description": "Location for all resources."
+            }
+        }
+    },
+    "variables": {
+        "partnerArray": "[split(parameters('partnerServers'),',')]",
+        "partnerRgArray": "[split(parameters('partnerResourceGroups'),',')]"
+    },
+    "resources": [
+        {
+            "apiVersion": "2015-05-01-preview",
+            "type": "Microsoft.Sql/servers/failoverGroups",
+            "name": "[concat(parameters('sqlServerPrimaryName'), '/', parameters('sqlFailoverGroupName'))]",
+            "properties": {
+                "serverName": "[parameters('sqlServerPrimaryName')]",
+                "copy": [{
+                    "name": "partnerServers",
+                    "count": "[length(variables('partnerArray'))]",
+                    "input": {
+                        "id": "[resourceId(variables('partnerRgArray')[copyIndex('partnerServers')], 'Microsoft.Sql/servers/', variables('partnerArray')[copyIndex('partnerServers')])]"
+                    }
+                }],
+                "readWriteEndpoint": {
+                    "failoverPolicy": "Automatic",
+                    "failoverWithDataLossGracePeriodMinutes": 60
+                },
+                "readOnlyEndpoint": {
+                    "failoverPolicy": "Disabled"
+                },
+                "databases": [
+                    "[resourceId('Microsoft.Sql/servers/databases', parameters('sqlServerPrimaryName'), parameters('sqlDatabaseName'))]"
+                ]
+            }
+        }
+    ]
+}

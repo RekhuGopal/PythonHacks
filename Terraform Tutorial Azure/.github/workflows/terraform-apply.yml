@@ -1,0 +1,28 @@
+name: Terraform Apply
+
+on: 
+  push:
+   branches:
+     - main
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    env:
+      ARM_CLIENT_ID: ${{secrets.ARM_CLIENT_ID}}
+      ARM_CLIENT_SECRET: ${{secrets.MYSUPERSECRETE}}
+      ARM_SUBSCRIPTION_ID: ${{secrets.MYSBSCRIPTIONID}}
+      ARM_TENANT_ID: ${{secrets.ARM_TENANT_ID}}
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+
+      - name: Terraform Init
+        run: terraform init
+
+      - name: Terraform Apply
+        run: terraform apply -auto-approve

@@ -1,0 +1,11 @@
+#Terraform Provider Block - CloudQuickPOCS
+provider "azurerm" {
+ # The "feature" block is required for AzureRM provider 2.x. 
+ # If you're using version 1.x, the "features" block is not allowed.
+ version = "~>2.0"
+ features {}
+ subscription_id = "your subscription_id"
+ client_id  = "your spn client id"
+ client_secret  = "your spn secrete"
+ tenant_id       =  "your tenant id"
+}
