@@ -1,0 +1,66 @@
+Pre-Requisite-2 EKS Cluster
+===========================================================================
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Have Helm installed in your VM
+helm version --short
+==========================================================================
+
+Creating custom Helm chart
+===========================================================================
+## Create custom helm
+helm create cqpocshelm
+
+## List dependencies
+helm dependency list
+
+## Update dependencies
+helm dependency update
+
+## Vaidate the manifest file
+helm template cqpocshelm/
+==========================================================================
+
+EKS Cluster
+===========================================================================
+## Create EKS cluster
+eksctl create cluster --name cqpocsefkdemo --node-type t2.large --nodes 3 --nodes-min 3 --nodes-max 5 --region us-east-1 --zones us-east-1a,us-east-1b,us-east-1c,us-east-1d,us-east-1f
+
+## Get EKS Cluster service
+eksctl get cluster --name cqpocsefkdemo --region us-east-1
+
+## Create IAM OIDC provider
+eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster cqpocsefkdemo --approve
+
+## Create an IAM policy called
+aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
+
+## Create a IAM role and ServiceAccount
+eksctl create iamserviceaccount --cluster cqpocsefkdemo --namespace kube-system --name aws-load-balancer-controller --attach-policy-arn arn:aws:iam::357171621133:policy/AWSLoadBalancerControllerIAMPolicy --override-existing-serviceaccounts --approve
+
+## Install the TargetGroupBinding CRDs
+kubectl apply -k github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master
+kubectl get crd
+
+## Deploy the Helm chart
+helm repo add eks https://aws.github.io/eks-charts
+
+## Configure AWS ALB (Apllication Load Balancer) to sit infront of Ingress
+helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=cqpocsefkdemo --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller --set image.tag="v2.2.0"
+
+kubectl -n kube-system rollout status deployment aws-load-balancer-controller
+
+## Install the application
+helm install cqpocs-helm cqpocshelm/
+
+## List kubernetes cluster
+helm ls
+
+## Verify Ingress
+kubectl get ingress/ingress-2048 -n game-2048
+
+## Get Ingress URL
+kubectl get ingress/ingress-2048 -n game-2048 -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+==========================================================================

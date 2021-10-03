@@ -1,0 +1,26 @@
+Namespacename: game-2048
+
+Deploymentname: deployment-2048
+
+Servicename: service-2048
+
+Ingressname: ingress-2048
+
+labels:
+  app.kubernetes.io/name: app-2048
+ 
+matchLabels:
+  app.kubernetes.io/name: app-2048
+  
+selector:
+  app.kubernetes.io/name: app-2048
+
+containers:
+  name: app-2048
+  image: alexwhen/docker-2048
+  imagePullPolicy: Always
+  
+annotations:
+  kubernetes.io/ingress.class: alb
+  alb.ingress.kubernetes.io/scheme: internet-facing
+  alb.ingress.kubernetes.io/target-type: instance

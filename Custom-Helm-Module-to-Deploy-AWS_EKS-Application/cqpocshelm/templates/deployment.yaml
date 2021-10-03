@@ -1,0 +1,27 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: {{ .Values.Namespacename }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: {{ .Values.Namespacename }}
+  name: {{ .Values.Deploymentname }}
+spec:
+  selector:
+    matchLabels:
+      {{- toYaml .Values.matchLabels| nindent 6 }}
+  replicas: 5
+  template:
+    metadata:
+      labels:
+        {{- toYaml .Values.labels| nindent 8 }}
+    spec:
+      containers:
+      - image: {{ .Values.containers.image }}
+        imagePullPolicy: {{ .Values.containers.imagePullPolicy }}
+        name: {{ .Values.containers.name }}
+        ports:
+        - containerPort: 80

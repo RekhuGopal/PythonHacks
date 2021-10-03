@@ -1,0 +1,15 @@
+apiVersion: networking.k8s.io/v1beta1
+kind: Ingress
+metadata:
+  namespace: {{ .Values.Namespacename }}
+  name: {{ .Values.Ingressname }}
+  annotations:
+    {{- toYaml .Values.annotations| nindent 4 }}
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /*
+            backend:
+              serviceName: {{ .Values.Servicename }}
+              servicePort: 80
