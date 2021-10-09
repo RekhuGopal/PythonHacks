@@ -1,0 +1,55 @@
+##################### Create AWS EKS clsuster #######################################################################
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Create EKS cluster
+eksctl create cluster --name reporttografancloud --node-type t2.large --nodes 3 --nodes-min 3 --nodes-max 5 --region us-east-1
+
+## Get EKS Cluster service
+eksctl get cluster --name reporttografancloud --region us-east-1
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name reporttografancloud --region us-east-1
+
+##cleanup resources, run 'eksctl delete cluster --region=us-east-1 --name=learnk8s-cluster'
+####################################################################################################################
+
+#################### Grafana cloud Prometheus (Metric) agent installation steps ####################################
+Grafana Cloud Reference :  https://grafana.com/docs/grafana-cloud/quickstart/agent-k8s/k8s_agent_metrics/?src=blog&camp=timeshift_51
+
+2. Run from AWS Cloud Shell
+2.1 Install Pre-requisites
+1. Install "eksctl" on linux.
+--> curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+--> sudo mv /tmp/eksctl /usr/local/bin
+--> eksctl version
+
+2. Install gettext
+--> sudo yum install gettext (to resolve error: envsubst not installed)
+
+3. Install kubectl
+--> curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+--> sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+--> kubectl version --client
+
+2.2 Set the EKS context 
+1. aws configure
+2. eksctl get cluster --name reporttografancloud --region us-east-1
+3. aws eks --region us-east-1 update-kubeconfig --name reporttografancloud
+
+2.3 Install Grafana Agent
+1. MANIFEST_URL=https://raw.githubusercontent.com/grafana/agent/main/production/kubernetes/agent-bare.yaml NAMESPACE=default /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/grafana/agent/release/production/kubernetes/install-bare.sh)" | kubectl apply -f - 
+
+## Downoad from s3 bucket were you kept as Cloudshell does not allow it.
+2. aws s3 cp s3://transcribebucket19/agent-bare.yaml agent-bare.yaml
+
+3. Configure Grafana Agent
+kubectl apply -n default -f ./agent-bare.yaml
+
+3. Restart the Grafana Agent
+kubectl rollout restart deployment/grafana-agent
+####################################################################################################################

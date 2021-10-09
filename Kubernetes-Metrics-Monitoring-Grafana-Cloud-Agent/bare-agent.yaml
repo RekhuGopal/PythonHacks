@@ -1,0 +1,66 @@
+kind: ConfigMap
+metadata:
+  name: grafana-agent
+apiVersion: v1
+data:
+  agent.yaml: |    
+    server:
+      http_listen_port: 12345
+    prometheus:
+      wal_directory: /tmp/grafana-agent-wal
+      global:
+        scrape_interval: 15s
+        external_labels:
+          cluster: snail
+      configs:
+      - name: integrations
+        remote_write:
+        - url: https://prometheus-prod-10-prod-us-central-0.grafana.net/api/prom/push
+          basic_auth:
+            username: 223331
+            password: eyJrIjoiNTkyNzYyNTQwMTI5MDg0Y2JkMWFmN2YxY2EyNDdkOTg0YWJjM2ZiMCIsIm4iOiJla3NtZXRyaWNwdXNoZGVtbyIsImlkIjo1NTA4NjN9
+        scrape_configs:
+        - job_name: integrations/kubernetes/cadvisor
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          kubernetes_sd_configs:
+            - role: node
+          metric_relabel_configs:
+            - action: drop
+              regex: container_([a-z_]+);
+              source_labels:
+                - __name__
+                - image
+            - action: drop
+              regex: container_(network_tcp_usage_total|network_udp_usage_total|tasks_state|cpu_load_average_10s)
+              source_labels:
+                - __name__
+          relabel_configs:
+            - replacement: kubernetes.default.svc.cluster.local:443
+              target_label: __address__
+            - regex: (.+)
+              replacement: /api/v1/nodes/$1/proxy/metrics/cadvisor
+              source_labels:
+                - __meta_kubernetes_node_name
+              target_label: __metrics_path__
+          scheme: https
+          tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: false
+              server_name: kubernetes
+        - job_name: integrations/kubernetes/kubelet
+          bearer_token_file: /var/run/secrets/kubernetes.io/serviceaccount/token
+          kubernetes_sd_configs:
+            - role: node
+          relabel_configs:
+            - replacement: kubernetes.default.svc.cluster.local:443
+              target_label: __address__
+            - regex: (.+)
+              replacement: /api/v1/nodes/$1/proxy/metrics
+              source_labels:
+                - __meta_kubernetes_node_name
+              target_label: __metrics_path__
+          scheme: https
+          tls_config:
+              ca_file: /var/run/secrets/kubernetes.io/serviceaccount/ca.crt
+              insecure_skip_verify: false
+              server_name: kubernetes
