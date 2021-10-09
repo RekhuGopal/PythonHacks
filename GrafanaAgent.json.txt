@@ -1,0 +1,37 @@
+eksctl create cluster --name reporttografancloud --region us-east-1 --fargate 
+eksctl create cluster --version 1.20 --region us-east-1 --node-type t3.large --nodes 1 --name my-demo-cluster  --fargate
+eksctl create cluster --version 1.20 --region us-east-1 --node-type t3.large --nodes 1 --name my-demo-cluster2 --fargate
+aws eks --region us-east-1 update-kubeconfig --name reporttografancloud
+eksctl delete cluster --name reporttografancloud --region us-east-1 --fargate
+
+eksctl create cluster --version 1.21 --region eu-west-2 --node-type t3.xlarge --nodes 3 --nodes-min 3 --nodes-max 5 --name eks-cluster-elasticdemo --node-ami ami-0f23a86dcdb23bbb3 --managed=false
+
+aws eks --region eu-west-2 update-kubeconfig --name eks-cluster-elasticdemo
+
+eksctl delete cluster --name update-kubeconfig --region us-east-1 --fargate
+
+
+
+############ Grafana cloud Prometheus (Metric) agent installation steps ####################################
+1. Deploy Grafana Agent resources
+2. Run from AWS Cloud Shell
+
+2.1 Install Pre-requisites
+1. Install gettext
+--> sudo yum install gettext (to resolve error: envsubst not installed)
+2. Install kubectl
+--> curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+--> sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+--> kubectl version --client
+
+2.2 Set the EKS context 
+1. aws eks --region us-east-1 update-kubeconfig --name reporttografancloud
+
+2.3 Install Grafana Agent
+1. MANIFEST_URL=https://raw.githubusercontent.com/grafana/agent/main/production/kubernetes/agent-bare.yaml NAMESPACE=default /bin/sh -c "$(curl -fsSL https://raw.githubusercontent.com/grafana/agent/release/production/kubernetes/install-bare.sh)" | kubectl apply -f - 
+
+2. Configure Grafana Agent
+kubectl apply -n default -f ./agent-bare.yaml
+
+3. Restart the Grafana Agent
+kubectl rollout restart deployment/grafana-agent
