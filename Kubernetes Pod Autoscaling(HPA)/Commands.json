@@ -1,0 +1,44 @@
+##################### Create AWS EKS clsuster #######################################################################
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Create EKS cluster
+eksctl create cluster --name podautoscale --node-type t2.large --nodes 3 --nodes-min 3 --nodes-max 5 --region us-east-1 --zones=us-east-1a,us-east-1b,us-east-1c
+
+## Get EKS Cluster service
+eksctl get cluster --name podautoscale --region us-east-1
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name podautoscale --region us-east-1
+
+##cleanup resources, run 'eksctl delete cluster --region=us-east-1 --name=learnk8s-cluster'
+####################################################################################################################
+
+#################### EKS Horizontal Pod Autoscaling Configuration (HPA) ############################################
+##Deploy the Metrics Server
+kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.5.0/components.yaml
+
+##Verify the metric servers using below command
+kubectl get apiservice v1beta1.metrics.k8s.io -o json | jq '.status'
+
+##Deploy a Sample App
+kubectl create deployment php-apache --image=us.gcr.io/k8s-artifacts-prod/hpa-example
+kubectl set resources deploy php-apache --requests=cpu=200m
+kubectl expose deploy php-apache --port 80
+kubectl get pod -l app=php-apache
+
+##Create an HPA resource
+kubectl autoscale deployment php-apache --cpu-percent=50 --min=1 --max=10
+kubectl get hpa
+
+
+##Generate load to trigger scaling (In seperate terminal)
+kubectl --generator=run-pod/v1 run -i --tty load-generator --image=busybox /bin/sh
+while true; do wget -q -O - http://php-apache; done
+kubectl get hpa -w
+
+####################################################################################################################
