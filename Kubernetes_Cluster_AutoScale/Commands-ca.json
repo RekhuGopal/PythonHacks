@@ -1,0 +1,55 @@
+##################### Create AWS EKS clsuster #######################################################################
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Create EKS cluster
+eksctl create cluster --name clusteratoscales --node-type t2.large --nodes 2 --nodes-min 2 --nodes-max 3 --region us-east-1 --zones=us-east-1a,us-east-1b,us-east-1c
+
+## Get EKS Cluster service
+eksctl get cluster --name clusteratoscales --region us-east-1
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name clusteratoscales --region us-east-1
+
+####################################################################################################################
+
+#################### EKS Cluster Autoscaling Configuration (CA) ############################################
+
+## Create node group after eks cluster creation with a tag of below keys and vlaues
+k8s.io/cluster-autoscaler/<cluster-name>: owned
+k8s.io/cluster-autoscaler/enabled : TRUE
+
+##Check the existing configurations (change your eks cluster name value).
+aws autoscaling describe-auto-scaling-groups 
+
+#Creating an IAM policy for your service account that will allow your CA pod to interact with the autoscaling groups.
+aws iam create-policy --policy-name k8s-asg-policy --policy-document file://k8s-asg-policy.json
+
+## Deploy the Cluster Autoscaler (CA)
+# Deploy the Cluster Autoscaler to your cluster with the following command
+# https://raw.githubusercontent.com/kubernetes/autoscaler/master/cluster-autoscaler/cloudprovider/aws/examples/cluster-autoscaler-autodiscover.yaml
+kubectl apply -f ./cluster-autoscaler-autodiscover.yaml
+
+## Check node number before scaling
+kubectl get nodes -w
+
+## Create an example deployment
+kubectl create deployment autoscaler-demo --image=nginx
+
+## Scale to great extent
+kubectl scale deployment autoscaler-demo --replicas=100
+
+## To check the progress of the pod’s deployment
+kubectl get deployment autoscaler-demo --watch
+
+## Evaluate the nodes number getting increased.
+kubectl get nodes
+
+####################################################################################################################
