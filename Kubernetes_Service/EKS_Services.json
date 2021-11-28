@@ -1,0 +1,75 @@
+##################### Create AWS EKS clsuster #######################################################################
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Create EKS cluster
+eksctl create cluster --name eksservice --node-type t2.large --nodes 1 --nodes-min 1 --nodes-max 2 --region us-east-1 --zones=us-east-1a,us-east-1b,us-east-1c
+
+## Get EKS Cluster service
+eksctl get cluster --name eksservice --region us-east-1
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name eksservice --region us-east-1
+
+####################################################################################################################
+
+#################### EKS Cluster Services #############################################################################
+# create the namespace
+kubectl create ns my-nginx
+
+# create the nginx deployment with 2 replicas
+kubectl -n my-nginx apply -f ./run-my-nginx.yaml
+
+# get pods details
+kubectl -n my-nginx get pods -o wide
+
+# create a Service for your 2 nginx replicas with kubectl expose:
+kubectl -n my-nginx expose deployment/my-nginx
+
+# describe the service
+kubectl -n my-nginx describe svc my-nginx
+
+# Create a variable set with the my-nginx service IP
+kubectl -n my-nginx get svc my-nginx -ojsonpath='{.spec.clusterIP}'
+
+# Create a new deployment and allocate a TTY for the container in the pod
+kubectl -n my-nginx run -i --tty load-generator --env="MyClusterIP=${MyClusterIP}" --image=busybox /bin/sh
+
+# Connecting to the nginx welcome page using the ClusterIP.
+wget -q -O - ${MyClusterIP} | grep '<title>'
+exit
+
+############ Accessing the services ###############################################
+#Environment Variables (When a Pod runs on a Node, the kubelet adds a set of environment variables for each active Service.)
+#Let’s view the pods again
+kubectl -n my-nginx get pods -l run=my-nginx -o wide
+
+# let’s inspect the environment of one of your running nginx Pods:
+kubectl -n my-nginx get pods -l run=my-nginx -o jsonpath='{.items[0].metadata.name}'
+kubectl -n my-nginx exec ${mypod} -- printenv 
+
+# lets restart the pod so that scheduler puts the pod at right nodes now
+kubectl -n my-nginx rollout restart deployment my-nginx
+kubectl -n my-nginx get pods -l run=my-nginx -o wide
+
+# inspect the environment of one of your running nginx Pods one more time:
+kubectl -n my-nginx get pods -l run=my-nginx -o jsonpath='{.items[0].metadata.name}'
+kubectl -n my-nginx exec ${mypod} -- printenv 
+
+# Kubernetes DNS (Kubernetes offers a DNS cluster add-on Service that automatically assigns dns names to other Services.)
+# To check if core DNS service running 
+kubectl get service -n kube-system -l k8s-app=kube-dns
+
+# Check talk to the Service from any pod in your cluster using standard methods 
+kubectl -n my-nginx run curl --image=radial/busyboxplus:curl -i --tty
+nslookup my-nginx
+exit
+
+####################################################################################################################
