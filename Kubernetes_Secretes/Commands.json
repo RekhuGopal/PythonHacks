@@ -1,0 +1,33 @@
+##################### Create AWS EKS clsuster #######################################################################
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Create EKS cluster
+eksctl create cluster --name ekssecrete --node-type t2.large --nodes 1 --nodes-min 1 --nodes-max 2 --region us-east-1 --zones=us-east-1a,us-east-1b,us-east-1c
+
+## Get EKS Cluster service
+eksctl get cluster --name ekssecrete --region us-east-1
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name ekssecrete --region us-east-1
+
+####################################################################################################################
+1. Create a secret using kubectl command-line tool.
+
+kubectl create secret generic secretname --from-literal=username1=dXNlcm5hbWU= --from-literal=password1=cGFzc3dvcmQ=
+kubectl create -f <filename.yaml>
+
+3. kubectl get secret  # To verify the secretes
+
+4. Consuming Secret Values from environment variables
+4.1 kubectl create -f <filename.yaml>
+4.2 kubectl exec -it <podname> -- sh
+4.3 env | grep <envfilename>
+
+5.Consuming Secret values from volumes.
+5.1 kubectl create -f <volumefilename.yaml>
+5.2 kubectl exec -it <podname> -- sh
