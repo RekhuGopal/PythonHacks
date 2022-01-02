@@ -2,6 +2,21 @@ import boto3
 import logging
 import os
 
+# Read the list of existing buckets
+def list_bucket():
+    # Create bucket
+    try:
+        s3 = boto3.client('s3')
+        response = s3.list_buckets()
+        if response:
+            print('Buckets exists..')
+            for bucket in response['Buckets']:
+                print(f'  {bucket["Name"]}')
+    except Exception as e:
+        logging.error(e)
+        return False
+    return True
+
 ## Create AWS S3 bucket using python boto3
 def create_bucket(bucket_name, region=None):
     try:
@@ -13,21 +28,6 @@ def create_bucket(bucket_name, region=None):
             location = {'LocationConstraint': region}
             s3_client.create_bucket(Bucket=bucket_name,
                                     CreateBucketConfiguration=location)
-    except Exception as e:
-        logging.error(e)
-        return False
-    return True
-
-# Read the list of existing buckets
-def list_bucket():
-    # Create bucket
-    try:
-        s3 = boto3.client('s3')
-        response = s3.list_buckets()
-        if response:
-            print('Buckets exists..')
-            for bucket in response['Buckets']:
-                print(f'  {bucket["Name"]}')
     except Exception as e:
         logging.error(e)
         return False
@@ -70,10 +70,9 @@ def delete_file(bucket, key_name):
 
 # Delete bucket empty bucket
 def delete_bucket(bucket):
-    s3_client = boto3.resource('s3')
+    s3_client = boto3.client('s3')
     try:
-        bucket = s3_client.Bucket(bucket)
-        bucket.objects.all().delete()
+        bucket = s3_client.delete_bucket(Bucket=bucket)
     except Exception as e:
         logging.error(e)
         return False
