@@ -79,7 +79,9 @@ def delete_bucket(bucket):
     return True
 
 ## Read list of buckets
+'''
 list_bucket()
+'''
 
 '''
 ## Calling Create Bucket
@@ -89,6 +91,7 @@ if result_create :
 else:
     print("bucket got created failed..!")
 '''
+
 
 '''
 ## Upload a file to bucket
@@ -117,11 +120,10 @@ else:
     print("bucket file delete failed..!")
 '''
 
-'''
-## Delete a file from bucket
+
+## Delete bucket
 result_deletebucket = delete_bucket("s3boto3test1")
 if result_deletebucket :
     print("bucket deleted successfully..!")
 else:
     print("bucket delete failed..!")
-'''
