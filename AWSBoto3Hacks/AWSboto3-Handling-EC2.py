@@ -3,13 +3,27 @@ import logging
 from datetime import date, datetime
 import json
 
-import boto3
-
 # Helper method to serialize datetime fields
 def json_datetime_serializer(obj):
     if isinstance(obj, (datetime, date)):
         return obj.isoformat()
     raise TypeError ("Type %s not serializable" % type(obj))
+
+## Create Key pair
+def Create_EC2KeyPair(AWS_REGION):
+    try:
+        ec2_response = boto3.resource('ec2', region_name=AWS_REGION)
+        result_keypair = ec2_response.create_key_pair(
+                                    KeyName='cqpocs_key',
+                                    DryRun=False,
+                                    KeyType='rsa',
+                                )
+        if result_keypair:
+            print("Key pair created successfull..!")
+    except Exception as e:
+        logging.error(e)
+        return False
+    return True
 
 ## Create EC2 Instances
 def Create_EC2Instance (AWS_REGION, KEY_PAIR_NAME, AMI_ID ):
@@ -36,7 +50,6 @@ def Create_EC2Instance (AWS_REGION, KEY_PAIR_NAME, AMI_ID ):
 
         for instance in instances:
             print(f'EC2 instance "{instance.id}" has been launched')
-            
             instance.wait_until_running()
             print(f'EC2 instance "{instance.id}" has been started')
     except Exception as e:
@@ -65,11 +78,11 @@ def Getall_EC2Instance(AWS_REGION):
 def Filter_EC2Instance(AWS_REGION):
     try:
         ec2_response = boto3.resource('ec2', region_name=AWS_REGION)
-        tag_value = 'cqpocs_demo'
+        tag_value = 'dev'
         instances = ec2_response.instances.filter(
             Filters=[
                 {
-                    'Name': 'tag:Name',
+                    'Name': 'tag:Environment',
                     'Values': [
                         tag_value
                     ]
@@ -184,15 +197,21 @@ def Terminate_EC2Instance(AWS_REGION,INSTANCE_ID):
     return True
 
 # Static variables
-AWS_REGION = "us-east-1"
+AWS_REGION = "eu-west-1"
 KEY_PAIR_NAME = "cqpocs_key"
-AMI_ID = ""
-INSTANCE_ID = ""
+AMI_ID = "ami-04dd4500af104442f"
+INSTANCE_ID = "i-009fabdf30ca6a7f2"
+'''
+## Create Key pair
+Create_EC2KeyPair(AWS_REGION)
+
 ## Call Create EC2 Instances
 Create_EC2Instance (AWS_REGION, KEY_PAIR_NAME, AMI_ID)
 
+
 ## List All EC2 Instances
 Getall_EC2Instance(AWS_REGION)
+
 
 ## Filter EC2 Instances
 Filter_EC2Instance(AWS_REGION)
@@ -203,14 +222,19 @@ Describe_EC2Instance(AWS_REGION, INSTANCE_ID)
 ## Tag EC2 Instances
 Tag_EC2Instance(AWS_REGION,INSTANCE_ID)
 
+
 ## Stop EC2 Instances
 Stop_EC2Instance(AWS_REGION,INSTANCE_ID)
 
+
 ## Start EC2 Instances
 Start_EC2Instance(AWS_REGION,INSTANCE_ID)
+
+
 
 ## Restart EC2 Instances
 Restart_EC2Instance(AWS_REGION,INSTANCE_ID)
 
 ## Terminate EC2 Instances
 Terminate_EC2Instance(AWS_REGION,INSTANCE_ID)
+'''
