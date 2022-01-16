@@ -2,8 +2,8 @@ import boto3
 from botocore.exceptions import ClientError
 
 def send_email():
-    SENDER = "vrchinnarathod@gmail.com"
-    RECIPIENT = "vrchinnarathod@gmail.com"
+    SENDER = "youremail@gmail.com" # must be verified in AWS SES Email
+    RECIPIENT = "youremail@gmail.com" # must be verified in AWS SES Email
 
     # If necessary, replace us-west-2 with the AWS Region you're using for Amazon SES.
     AWS_REGION = "us-east-1"
