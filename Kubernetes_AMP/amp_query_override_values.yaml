@@ -1,0 +1,9 @@
+
+serviceAccount:
+    name: "iamproxy-service-account"
+    annotations:
+
+        eks.amazonaws.com/role-arn: "arn:aws:iam::357171621133:role/EKS-AMP-ServiceAccount-Role"
+grafana.ini:
+  auth:
+    sigv4_auth_enabled: true
