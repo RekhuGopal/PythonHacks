@@ -1,0 +1,77 @@
+##################### Pre-requisite ##########################################################################################
+## AWS CLI
+
+## Chocolatey links (installer - for argocd cli deployment)
+https://chocolatey.org/install
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## kubectl
+
+## argocd-cli
+##############################################################################################################################
+##################### Create AWS EKS clsuster ################################################################################
+## Create EKS cluster
+eksctl create cluster --name eksargocd --node-type t2.large --nodes 1 --nodes-min 1 --nodes-max 2 --region us-east-1 --zones=us-east-1a,us-east-1b,us-east-1c
+
+## Get EKS Cluster service
+eksctl get cluster --name eksargocd --region us-east-1
+
+## Update Kubeconfig 
+aws eks update-kubeconfig --name eksargocd
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name eksargocd --region us-east-1
+
+##################################################CREATE AWS EKS CD with ArgoCD #######################################################
+## Installing Argo CD on Your Cluster
+1.Check if kubectl is working as expected
+  kubectl get nodes
+  
+2.Create namespace
+  kubectl create namespace argocd
+  
+3.Run the Argo CD install script provided by the project maintainers.
+  kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+  
+4. Check the status of your Kubernetes pods
+  kubectl get pods -n argocd
+
+## Forwarding Ports to Access Argo CD
+5.1.Retrieve the admin password which was automatically generated during your installation and decode from base64 from online.
+  kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}"
+
+5.2 forward those to arbitrarily chosen other ports, like 8080, like so:
+  kubectl port-forward svc/argocd-server -n argocd 8080:443
+  
+5.3 Access from ineternet from browser.
+  http://localhost:8080 
+  user id : admin
+  password :base64 decoded password.
+  
+## Working with Argo CD from the Command Line
+6. Use chocolatey utility to install in Windows ( with admin access)
+   choco install argocd-cli
+   
+## Deploying an Example Application from argocd using argocd cli
+7. Deploying an Example Application
+  argocd login localhost:8080
+  user id : admin
+  password :base64 decoded password.
+  argocd app create helm-guestbook --repo https://github.com/argoproj/argocd-example-apps.git --path helm-guestbook --dest-server https://kubernetes.default.svc --dest-namespace default
+  
+7.1 Check status inside argocd
+  argocd app get helm-guestbook
+
+7.2 Actually deploy the application
+  argocd app sync helm-guestbook
+
+7.3 Port foward from onther session check the application status
+  kubectl port-forward svc/helm-guestbook 9090:80
+  http://localhost:9090
+
+#############################################################################################################################################
