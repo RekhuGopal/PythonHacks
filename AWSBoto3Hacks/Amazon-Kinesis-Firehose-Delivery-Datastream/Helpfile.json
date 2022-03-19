@@ -1,0 +1,35 @@
+1. Lamabda role permissions.
+{
+        	"Effect": "Allow",
+        	"Action": [
+            	"firehose:PutRecordBatch"
+        	],
+        	"Resource": [
+            	"arn:aws:firehose:us-east-1:357171621133:deliverystream/PUT-S3-HueNp"
+        	]
+}
+
+2. Processing Lambda code.
+"use strict";
+console.log('Loading function');
+exports.handler = (event, context, callback) => {
+   /* Process the list of records and transform them */
+   const output = event.records.map((record) => {
+       console.log(record.recordId);
+       const payload =JSON.parse((Buffer.from(record.data, 'base64').toString()))
+       const resultPayLoad = {
+               ticker_symbol : payload.ticker_symbol,
+               sector : payload.sector,
+               price : payload.price,
+           };
+          
+       return{
+           recordId: record.recordId,
+           result: 'Ok',
+           data: (Buffer.from(JSON.stringify(resultPayLoad))).toString('base64'),
+       };
+   });
+   console.log(`Processing completed.  Successful records ${output.length}.`);
+   callback(null, { records: output });
+};
+
