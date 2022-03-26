@@ -1,0 +1,36 @@
+{
+    "Comment": "Step function to execute lengthy synchronous requests",
+    "StartAt": "StartProcessing",
+    "States": {
+      "StartProcessing": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:<Your region>:<your account number>:function:Cloud_Quick_Labs_Lengthy_Pocessor",
+        "Next": "VerifyProcessor"
+      },
+      "VerifyProcessor": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Variable": "$.IsComplete",
+            "BooleanEquals": false,
+            "Next": "LongWait"
+          },
+          {
+            "Variable": "$.IsComplete",
+            "BooleanEquals": true,
+            "Next": "EndOfUpdate"
+          }
+        ]
+      },
+      "LongWait": {
+        "Type": "Wait",
+        "Seconds": 10,
+        "Next": "StartProcessing"
+      },
+      "EndOfUpdate": {
+        "Type": "Pass",
+        "Result": "ProcessingComplete",
+        "End": true
+      }
+    }
+  }
