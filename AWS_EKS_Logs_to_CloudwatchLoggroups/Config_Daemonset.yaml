@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    k8s-app: fluentd-cloudwatch
+  name: fluentd-cloudwatch
+  namespace: kube-system
+spec:
+  selector:
+    matchLabels:
+      k8s-app: fluentd-cloudwatch
+  template:
+    metadata:
+      labels:
+        k8s-app: fluentd-cloudwatch
+      annotations:
+        iam.amazonaws.com/role: fluentd
+    spec:
+      containers:
+        - env:
+            - name: AWS_REGION
+              value: us-east-1
+            - name: AWS_EKS_CLUSTER_NAME
+              value: my-eks
+          image: 'fluent/fluentd-kubernetes-daemonset:v1.1-debian-cloudwatch'
+          imagePullPolicy: IfNotPresent
+          name: fluentd-cloudwatch
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /config-volume
+              name: config-volume
+            - mountPath: /fluentd/etc
+              name: fluentdconf
+            - mountPath: /var/log
+              name: varlog
+            - mountPath: /var/lib/docker/containers
+              name: varlibdockercontainers
+              readOnly: true
+            - mountPath: /run/log/journal
+              name: runlogjournal
+              readOnly: true
+      dnsPolicy: ClusterFirst
+      initContainers:
+        - command:
+            - sh
+            - '-c'
+            - cp /config-volume/..data/* /fluentd/etc
+          image: busybox
+          imagePullPolicy: Always
+          name: copy-fluentd-config
+          resources: {}
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+          volumeMounts:
+            - mountPath: /config-volume
+              name: config-volume
+            - mountPath: /fluentd/etc
+              name: fluentdconf
+      serviceAccount: fluentd
+      serviceAccountName: fluentd
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - configMap:
+            defaultMode: 420
+            name: fluentd-config
+          name: config-volume
+        - emptyDir: {}
+          name: fluentdconf
+        - hostPath:
+            path: /var/log
+            type: ''
+          name: varlog
+        - hostPath:
+            path: /var/lib/docker/containers
+            type: ''
+          name: varlibdockercontainers
+        - hostPath:
+            path: /run/log/journal
+            type: ''
+          name: runlogjournal
