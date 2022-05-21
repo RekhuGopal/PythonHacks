@@ -1,0 +1,43 @@
+{
+    "orderId": "12345678",
+    "orderDate": "20190820101213",
+    "payment": "check",
+    "detail": {
+      "customerId": "1234",
+      "deliveryAddress": "123, Bengalore,Karneatka, India",
+      "deliverySpeed": "1-day",
+      "paymentMethod": "aCreditCard",
+      "items": [
+        {
+          "productName": "AvengerEndgame",
+          "category": "movie",
+          "price": 60.0,
+          "quantity": 1
+        },
+        {
+          "productName": "Redbull",
+          "category": "drink",
+          "price": 32.0,
+          "quantity": 1
+        },
+        {
+          "productName": "Wings of fire",
+          "category": "book",
+          "price": 18.0,
+          "quantity": 1
+        },
+        {
+          "productName": "Shoes",
+          "category": "Fashion",
+          "price": 180.0,
+          "quantity": 1
+        },
+        {
+          "productName": "Ground Coffee, Dark Roast",
+          "category": "grocery",
+          "price": 8.0,
+          "quantity": 6
+        }
+      ]
+    }
+  }

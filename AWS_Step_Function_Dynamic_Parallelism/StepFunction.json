@@ -1,0 +1,73 @@
+{
+    "StartAt": "ValidatePayment",
+    "States": {
+      "ValidatePayment": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:ap-south-1:357171621133:function:ProcessingLambda",
+        "Next": "CheckPayment"
+      },
+      "CheckPayment": {
+        "Type": "Choice",
+        "Choices": [
+          {
+            "Not": {
+              "Variable": "$.payment",
+              "StringEquals": "Ok"
+            },
+            "Next": "PaymentFailed"
+          }
+        ],
+        "Default": "ProcessAllItems"
+      },
+      "PaymentFailed": {
+        "Type": "Task",
+        "Resource": "arn:aws:lambda:ap-south-1:357171621133:function:ProcessingLambda",
+        "End": true
+      },
+      "ProcessAllItems": {
+        "Type": "Map",
+        "InputPath": "$.detail",
+        "ItemsPath": "$.items",
+        "MaxConcurrency": 3,
+        "Iterator": {
+          "StartAt": "CheckAvailability",
+          "States": {
+            "CheckAvailability": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:ap-south-1:357171621133:function:ProcessingLambda",
+              "Retry": [
+                {
+                  "ErrorEquals": [
+                    "TimeOut"
+                  ],
+                  "IntervalSeconds": 1,
+                  "BackoffRate": 2,
+                  "MaxAttempts": 3
+                }
+              ],
+              "Next": "PrepareForDelivery"
+            },
+            "PrepareForDelivery": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:ap-south-1:357171621133:function:ProcessingLambda",
+              "Next": "StartDelivery"
+            },
+            "StartDelivery": {
+              "Type": "Task",
+              "Resource": "arn:aws:lambda:ap-south-1:357171621133:function:ProcessingLambda",
+              "End": true
+            }
+          }
+        },
+        "ResultPath": "$.detail.processedItems",
+        "Next": "SendOrderSummary"
+      },
+      "SendOrderSummary": {
+        "Type": "Task",
+        "InputPath": "$.detail.processedItems",
+        "Resource": "arn:aws:lambda:ap-south-1:357171621133:function:ProcessingLambda",
+        "ResultPath": "$.detail.summary",
+        "End": true
+      }
+    }
+  }
