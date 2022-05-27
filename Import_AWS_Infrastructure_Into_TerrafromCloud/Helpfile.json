@@ -1,0 +1,12 @@
+choco install terraform --version=1.1.7 --force 
+
+1.  Put terraform.exe under custom path 
+2.  Change env path at system.
+
+Login Terraform cloud
+--------------------------
+terraform login app.terraform.io
+
+Import it using format
+--------------------------
+terraform import aws_s3_bucket.<ResourceVariable> <YourBucketName>
