@@ -1,0 +1,33 @@
+###############Configuration for sending OS logs to CloudWatch involves###############################################
+
+Create IAM Role with relevant permission and attach to Linux instance.
+Install CloudWatch agent in the instance.
+Prepare the configuration file in the instance.
+Start the CloudWatch agent service in the instance.
+Monitor the logs using CloudWatch web console.
+
+================================== STEPS =============================================================================
+Example AMI ID -  ami-078a289ddf4b09ae0/amzn2-ami-kernel-5.10-hvm-2.0.20220606.1-x86_64-gp2
+
+1.  Create Role with IAM Policy having required permissions for Instance Profile Role ( It has to have the access to forward log to CloudWatch)
+
+2. Login to the instance and install awslogs package.
+   
+   sudo yum install awslogs
+   
+3. Edit file /etc/awslogs/awscli.conf and change your AWS Region.
+
+4. Edit file /etc/awslogs/awslogs.conf and verify it.
+
+5. Start and enable awslogsd service by typing the command.
+
+   $ sudo service awslogsd start
+   $ sudo systemctl enable awslogsd
+=======================================================================================================================  
+   
+ NOTE: Commands to add at user data to install agent while booting (AMAZON LINUX 2 only)  
+   
+   sudo yum install -y https://s3.amazonaws.com/ec2-downloads-windows/SSMAgent/latest/linux_amd64/amazon-ssm-agent.rpm
+   sudo systemctl status amazon-ssm-agent
+   
+#######################################################################################################################
