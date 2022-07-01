@@ -1,0 +1,12 @@
+awsuser
+P%ssWo0rd#$
+================================ Steps to follow at "databrew.amazonaws.com" ===============================================
+1. Create datasets
+
+2. Create a project using the datasets using above dataset
+
+3. Build a transformation recipe
+
+4. Run the DataBrew recipe job on the full data
+
+=============================================================================================================================
