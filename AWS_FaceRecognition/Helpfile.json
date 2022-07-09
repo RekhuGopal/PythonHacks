@@ -1,0 +1,18 @@
+1.  Amazon Rekognition collection containers through the API
+
+aws rekognition create-collection --collection-id family_collection --region ap-south-1
+
+
+
+2. The user or role that executes the commands must have permissions in AWS Identity and Access Management (IAM) to perform those actions
+
+AmazonRekognitionFullAccess
+AmazonDynamoDBFullAccess
+AmazonS3FullAccess
+IAMFullAccess
+
+3. Create an Amazon DynamoDB table to store the picture Thumbprint and name of the person.
+aws dynamodb create-table --table-name family_collection --attribute-definitions AttributeName=RekognitionId,AttributeType=S --key-schema AttributeName=RekognitionId,KeyType=HASH --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 --region ap-south-1
+
+
+
