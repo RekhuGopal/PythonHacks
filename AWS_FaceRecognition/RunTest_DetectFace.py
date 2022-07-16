@@ -5,7 +5,7 @@ from PIL import Image
 rekognition = boto3.client('rekognition', region_name='ap-south-1')
 dynamodb = boto3.client('dynamodb', region_name='ap-south-1')
     
-image = Image.open("NT.jpg")
+image = Image.open("LM.jpg")
 stream = io.BytesIO()
 image.save(stream,format="JPEG")
 image_binary = stream.getvalue()
