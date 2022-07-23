@@ -1,0 +1,26 @@
+Redshift UserName : awsuser
+
+RedShiftPassord : MySuperPaSS123
+
+====== Create Item =================================
+{
+  "ID": {
+    "S": "1"
+  },
+  "Name": {
+    "S": "Smith"
+  },
+  "City": {
+    "S": "NewYork"
+  },
+  "Email": {
+    "S": "xyz2dffd@gmail.com"
+  },
+  "Designation": {
+    "S": "Sr.Dev"
+  },
+  "PhoneNumber": {
+    "S": "2124141241"
+  }
+}
+==================================================
