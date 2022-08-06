@@ -1,0 +1,96 @@
+##################### Create AWS EKS clsuster ################################################################################
+## Create EKS cluster
+eksctl create cluster --name multiappelb --node-type t2.large --nodes 1 --nodes-min 1 --nodes-max 2 --region us-east-1 --zones=us-east-1a,us-east-1b,us-east-1c
+
+## Get EKS Cluster service
+eksctl get cluster --name multiappelb --region us-east-1
+
+## Update Kubeconfig 
+aws eks update-kubeconfig --name multiappelb
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name multiappelb --region us-east-1
+
+###############################################################################################################################
+##################### Commands to follows #####################################################################################
+## AWS CLI to create repository.
+aws ecr create-repository --repository-name green
+aws ecr create-repository --repository-name yellow
+
+## Get variables required next run.
+$AWS_REGION="us-east-1"
+$AWS_REGISTRY_ID="357171621133"
+$AWS_ECR_REPO="357171621133.dkr.ecr.us-east-1.amazonaws.com"
+
+## Authenticate your docker to ecr == > gives encrypted password for docker
+aws ecr get-login-password --region us-east-1
+
+## Final Authenticate to ecr
+aws ecr --region us-east-1 | docker login -u AWS -p <Above encrytped password> 357171621133.dkr.ecr.us-east-1.amazonaws.com/yellow
+aws ecr --region us-east-1 | docker login -u AWS -p <Above encrytped password> 357171621133.dkr.ecr.us-east-1.amazonaws.com/green
+
+## Build , Tag and Push the image yellow
+cd yellow/
+docker build . -t yellow
+docker tag yellow:latest 357171621133.dkr.ecr.us-east-1.amazonaws.com/yellow:latest
+docker push 357171621133.dkr.ecr.us-east-1.amazonaws.com/yellow:latest
+
+## Build , Tag and Push the image green
+cd green/
+docker build . -t green
+docker tag green:latest 357171621133.dkr.ecr.us-east-1.amazonaws.com/green:latest
+docker push 357171621133.dkr.ecr.us-east-1.amazonaws.com/green:latest
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## Have Helm installed in your VM
+helm version --short
+
+## What Kubernetes Ingress
+"Kubernetes Ingress is an API object that provides routing rules to manage external user`s access to the services in a Kubernetes cluster,
+typically via HTTPS/HTTP"
+
+## Get EKS Cluster service
+eksctl get cluster --name multiappelb --region us-east-1
+
+## Create IAM OIDC provider
+eksctl utils associate-iam-oidc-provider --region us-east-1 --cluster multiappelb --approve
+
+## Create an IAM policy called
+aws iam create-policy --policy-name AWSLoadBalancerControllerIAMPolicy --policy-document file://iam_policy.json
+
+## Create a IAM role and ServiceAccount
+eksctl create iamserviceaccount --cluster multiappelb --namespace kube-system --name aws-load-balancer-controller --attach-policy-arn arn:aws:iam::357171621133:policy/AWSLoadBalancerControllerIAMPolicy --override-existing-serviceaccounts --approve
+
+## Install the TargetGroupBinding CRDs
+kubectl apply -k github.com/aws/eks-charts/stable/aws-load-balancer-controller/crds?ref=master
+kubectl get crd
+
+## Deploy the Helm chart
+helm repo add eks https://aws.github.io/eks-charts
+
+## Configure AWS ALB (Apllication Load Balancer) to sit infront of Ingress
+helm upgrade -i aws-load-balancer-controller eks/aws-load-balancer-controller -n kube-system --set clusterName=multiappelb --set serviceAccount.create=false --set serviceAccount.name=aws-load-balancer-controller
+
+kubectl -n kube-system rollout status deployment aws-load-balancer-controller
+
+## Deploy Sample Application
+kubectl apply -f .\color-app.yaml
+
+## Verify Ingress
+kubectl get ingress/color-app-ingress -n color-app
+
+## Get Ingress URL
+kubectl get ingress/color-app-ingress -n color-app -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name multiappelb --region us-east-1
+
+############################################################################################################################################

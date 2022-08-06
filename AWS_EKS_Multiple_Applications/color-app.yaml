@@ -1,0 +1,129 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: color-app
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: green-app
+  namespace: color-app
+  labels:
+    app: green-app
+spec:
+  selector:
+    matchLabels:
+      app: green-app
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: green-app
+    spec:
+      containers:
+      - name: green-container
+        image: 357171621133.dkr.ecr.us-east-1.amazonaws.com/green:latest
+        ports:
+            - containerPort: 80
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "200m"
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: yellow-app
+  namespace: color-app
+  labels:
+    app: yellow-app
+spec:
+  selector:
+    matchLabels:
+      app: yellow-app
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: yellow-app
+    spec:
+      containers:
+      - name: yellow-container
+        image: 357171621133.dkr.ecr.us-east-1.amazonaws.com/yellow:latest
+        ports:
+            - containerPort: 80
+        resources:
+          limits:
+            memory: "100Mi"
+            cpu: "200m"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: color-app
+  name: green-service
+  labels:
+    app: green-app
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /green/index.html
+spec:
+  type: NodePort
+  selector:
+    app: green-app
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: color-app
+  name: yellow-service
+  labels:
+    app: yellow-app
+  annotations:
+    alb.ingress.kubernetes.io/healthcheck-path: /yellow/index.html
+spec:
+  type: NodePort
+  selector:
+    app: yellow-app
+  ports:
+    - port: 80
+      targetPort: 80
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: color-app-ingress
+  namespace: color-app
+  labels:
+    app: color-app
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/target-type: ip
+    alb.ingress.kubernetes.io/healthcheck-protocol: HTTP
+    alb.ingress.kubernetes.io/healthcheck-port: traffic-port
+    alb.ingress.kubernetes.io/healthcheck-interval-seconds: '15'
+    alb.ingress.kubernetes.io/healthcheck-timeout-seconds: '5'
+    alb.ingress.kubernetes.io/success-codes: '200'
+    alb.ingress.kubernetes.io/healthy-threshold-count: '2'
+    alb.ingress.kubernetes.io/unhealthy-threshold-count: '2'
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /yellow
+            pathType: Prefix
+            backend:
+              service:
+                name: yellow-service
+                port:
+                  number: 80                        
+          - path: /green
+            pathType: Prefix
+            backend:
+              service:
+                name: green-service
+                port:
+                  number: 80
