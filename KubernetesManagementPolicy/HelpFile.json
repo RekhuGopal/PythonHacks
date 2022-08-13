@@ -1,0 +1,29 @@
+## Create EKS Cluster
+eksctl create cluster -f cluster.yaml 
+
+## Set up jsPolicy
+helm repo update
+helm install jspolicy -n jspolicy --create-namespace --repo https://charts.loft.sh  --generate-name
+
+## Check if pods are running
+kubectl get pods -n jspolicy
+
+## Apply policy to block depoyment in 'default' namespace
+kubectl create -f deny-default-ns-policy.yaml
+
+## Test deployment and it should be blocked.
+kubectl create -f nginx.yaml
+
+## Create another namespace 'xyz' and deploy nginx on it , it should work.
+kubectl create ns web
+kubectl create -f nginx_deployment.yaml
+
+## Create a policy to allow only list of Amzon ECR for deployments
+kubectl create -f enforce-image-registry.yaml
+
+## Deploy nginx to check if it blocked when image not from ECR --  Should be blocked
+kubectl create -f nginx_deployment.yaml
+
+
+
+

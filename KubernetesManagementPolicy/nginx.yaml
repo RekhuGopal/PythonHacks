@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: web
+  namespace: default
+  labels:
+    role: web
+spec:
+  containers:
+  - name: web
+    image: nginx
+    ports:
+    - name: http
+      containerPort: 80
+      protocol: TCP

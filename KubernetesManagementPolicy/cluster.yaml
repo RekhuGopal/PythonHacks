@@ -1,0 +1,8 @@
+apiVersion: eksctl.io/v1alpha5
+kind: ClusterConfig
+metadata:
+  name: jsPolicy
+  region: us-east-1
+nodeGroups:
+  - name: ng-1
+    desiredCapacity: 2

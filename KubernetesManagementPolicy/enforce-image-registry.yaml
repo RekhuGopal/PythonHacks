@@ -1,0 +1,26 @@
+apiVersion: policy.jspolicy.com/v1beta1
+kind: JsPolicy
+metadata:
+  name: "deny-untrusted-registries.example.com"
+spec:
+  type: Validating
+  operations: ["CREATE", "UPDATE"]
+  resources: ["pods", "deployments", "statefulsets"]
+  javascript: |
+    const registries = ["357171621133.dkr.ecr.us-east-1.amazonaws.com"]
+
+    // Use template.spec if defined (for Deployments and StatefulSets), or use spec otherwise (for Pods)
+    podSpec = request.object?.spec?.template?.spec || request.object?.spec
+
+    podSpec?.containers?.forEach(function(container, index) {
+        if (!registries.includes(container.image.split('/')[0])) {
+            deny("Field spec.containers[" + index + "].image must be pulled from  " + registries.toString())
+        }
+    })
+
+    podSpec?.initContainers?.forEach(function(initContainer, index) {
+        let imageRegistry =  initContainer.image.split('/')[0] 
+        if (!registries.includes(initContainer.image.split('/')[0])) {
+            errors.push("Field spec.initContainers[" + index + "].image must match regex: " + registries.toString())
+        }
+    })

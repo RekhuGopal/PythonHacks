@@ -1,0 +1,15 @@
+apiVersion: policy.jspolicy.com/v1beta1
+kind: JsPolicy
+metadata:
+  name: "deny-default-namespace.example.com"
+spec:
+  type: Validating
+  operations: ["CREATE"]
+  resources: ["*"]
+  scope: Namespaced
+  javascript: |
+    if (request.namespace === "default") {
+
+      deny("Creation of resources within the default namespace is not allowed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+     }
