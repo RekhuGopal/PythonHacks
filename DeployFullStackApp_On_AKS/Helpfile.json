@@ -1,0 +1,39 @@
+## Az login to azure account.
+az login --use-device-code
+
+## Create RG
+az group create --name myResourceGroup --location eastus
+
+## Configuring the Client and Generating a Key Pair [with powershell admin access]
+Add-WindowsCapability -Online -Name OpenSSH.Client~~~~0.0.1.0
+
+## Generating ssh-keygen [With user access]
+ssh-keygen
+
+## Create AKS Cluster
+az aks create -g myResourceGroup -n myAKSCluster --enable-managed-identity --node-count 1 --enable-addons monitoring --enable-msi-auth-for-monitoring  --generate-ssh-keys
+
+## Update ~/.kube/config
+az aks get-credentials --resource-group myResourceGroup --name myAKSCluster
+
+## Create an NGINX Ingress Controller
+# Create a K8s namespace for the ingress resources
+kubectl create namespace ingress-basic
+
+# Add the ingress-nginx repository 
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx  
+
+# Use Helm to deploy an NGINX ingress controller 
+helm install nginx-ingress ingress-nginx/ingress-nginx --namespace ingress-basic --set controller.replicaCount=2 --set controller.nodeSelector."beta\.kubernetes\.io/os"=linux --set defaultBackend.nodeSelector."beta\.kubernetes\.io/os"=linux
+
+## Deploy app
+kubectl apply -f ./App.yaml --namespace ingress-basic
+
+## Deploy Ingress
+kubectl apply -f ./ingress.yaml
+
+## Get public IP
+kubectl --namespace ingress-basic get services -o wide -w nginx-ingress-ingress-nginx-controller
+
+## Delete all
+az group delete --name myResourceGroup --yes --no-wait
