@@ -1,0 +1,5 @@
+az login --use-device-code
+
+pip install -r requirements.txt
+
+python provision_rg.py
