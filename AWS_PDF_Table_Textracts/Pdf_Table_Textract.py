@@ -24,7 +24,7 @@ class DocumentProcessor:
     processType = ''
 
     def main(self, bucketName, documentName):
-        self.roleArn = 'arn:aws:iam::357171621133:role/ETLlambdaAccessRole'
+        self.roleArn = '<past iam arn here>'
 
         self.bucket = bucketName
         self.document = documentName
