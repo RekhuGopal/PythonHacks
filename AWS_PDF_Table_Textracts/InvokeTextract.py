@@ -30,16 +30,16 @@ def ProcessDocument(s3_bucket, s3_key):
         return False
 def lambda_handler(event, context):
     print("event collected is {}".format(event))
-    record = event['Records'][0]
-    s3_bucket = record['s3']['bucket']['name']
-    print("Bucket name is {}".format(s3_bucket))
-    s3_key = record['s3']['object']['key']
-    print("Bucket key name is {}".format(s3_key))
-    from_path = "s3://{}/{}".format(s3_bucket, s3_key)
-    print("from path {}".format(from_path))
-    TextractResult = ProcessDocument(s3_bucket, s3_key)
-    if TextractResult :
-        print("job id returned..") 
-        return TextractResult
-    else:
-        return False
+    for record in event['Records'] :
+        s3_bucket = record['s3']['bucket']['name']
+        print("Bucket name is {}".format(s3_bucket))
+        s3_key = record['s3']['object']['key']
+        print("Bucket key name is {}".format(s3_key))
+        from_path = "s3://{}/{}".format(s3_bucket, s3_key)
+        print("from path {}".format(from_path))
+        TextractResult = ProcessDocument(s3_bucket, s3_key)
+        if TextractResult :
+            print("job id returned..") 
+            return TextractResult
+        else:
+            return False
