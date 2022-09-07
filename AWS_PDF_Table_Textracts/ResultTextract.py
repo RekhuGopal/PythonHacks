@@ -3,8 +3,12 @@ import boto3
 import time
 import json
 from botocore.exceptions import ClientError
+from trp import Document
+import os
 
 textract = boto3.client('textract', region_name='us-east-1')
+s3_client = boto3.resource('s3', region_name='us-east-1')
+Bucket_name = "TextractResults"
 
 def GetResults(jobId):
         maxResults = 1000
@@ -27,11 +31,47 @@ def GetResults(jobId):
         pages = json.dumps(pages)
         return pages
 
-def GetTableFromTextractResult(pages):
-    ConvertedToDictionary = json.loads(pages)
-    listOfBlock = ConvertedToDictionary[0]['Blocks']
-    table_item = next((item for item in listOfBlock if item['BlockType'] == "TABLE" and "MERGED_CELL" in item['Relationships']), None)
-    print("Table item is:  ", table_item)
+def UploadResultToS3Bucket(jobId, tableIndex, data):
+    try:
+        print("Inside upload results to S3 bucket..")
+        dynamicfilename = jobId +"_"+tableIndex+".json"
+        print("Dynamic file name is :", dynamicfilename)
+        local_file_path = "/tmp/textractresult.json"
+        with open(local_file_path, 'w') as fp:
+            json.dump(data, fp)
+        print("Result is stored in local .json file..")
+        s3_client.meta.client.upload_file(local_file_path, Bucket_name, dynamicfilename)
+        print("file uploaded successfully..")
+        os.remove(local_file_path)
+        print("file deleted after upload to s3..")
+    except Exception as exception :
+        print("Exception in upload to s3 bucket and error is {} ".format(exception))
+
+def GetTableFromTextractResult(pages, jobId):
+    try:
+        ConvertedToDictionary = json.loads(pages)
+        doc = Document(ConvertedToDictionary)
+        for page in doc.pages:
+            for table in page.tables:
+                print((page.tables).index(table))
+                Table = []
+                for r, row in enumerate(table.rows):
+                    i = 0
+                    rowst = {}
+                    for c, cell in enumerate(row.cells):
+                        if (page.tables).index(table) == 0 and (table.rows).index(row) > 0 :
+                            rowst[str((table.rows)[0].cells[i])] = str(cell)
+                        if (page.tables).index(table) == 1 and (table.rows).index(row) > 1 :
+                            rowst[str((table.rows)[1].cells[i])] = str(cell)
+                        i +=1
+                    if (page.tables).index(table) == 0 and (table.rows).index(row) > 0 :
+                        Table.append(rowst)
+                    if (page.tables).index(table) == 1 and (table.rows).index(row) > 1 :
+                        Table.append(rowst)
+                print(Table)
+                UploadResultToS3Bucket(jobId, (page.tables).index(table), Table)
+    except Exception as exception :
+        print("Exception in GetTableFromTextractResult and error is {} ".format(exception))
 
 def lambda_handler(event, context):
     print("event collected from sqs is : {}".format(event))
@@ -43,7 +83,7 @@ def lambda_handler(event, context):
     if qmessage['Status'] == "SUCCEEDED" and qmessage['JobId'] :
         result = GetResults(qmessage['JobId'])
         if result:
-            GetTableFromTextractResult(result)
+            GetTableFromTextractResult(result, qmessage['JobId'])
         else:
             print("results did not retrieved..")
     else:
