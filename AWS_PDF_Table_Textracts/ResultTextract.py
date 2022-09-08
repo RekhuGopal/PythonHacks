@@ -3,12 +3,12 @@ import boto3
 import time
 import json
 from botocore.exceptions import ClientError
-from trp import Document
+import trp
 import os
 
 textract = boto3.client('textract', region_name='us-east-1')
 s3_client = boto3.resource('s3', region_name='us-east-1')
-Bucket_name = "TextractResults"
+Bucket_name = "textractresultsd"
 
 def GetResults(jobId):
         maxResults = 1000
@@ -34,7 +34,7 @@ def GetResults(jobId):
 def UploadResultToS3Bucket(jobId, tableIndex, data):
     try:
         print("Inside upload results to S3 bucket..")
-        dynamicfilename = jobId +"_"+tableIndex+".json"
+        dynamicfilename = jobId +"_"+str(tableIndex)+".json"
         print("Dynamic file name is :", dynamicfilename)
         local_file_path = "/tmp/textractresult.json"
         with open(local_file_path, 'w') as fp:
@@ -50,7 +50,7 @@ def UploadResultToS3Bucket(jobId, tableIndex, data):
 def GetTableFromTextractResult(pages, jobId):
     try:
         ConvertedToDictionary = json.loads(pages)
-        doc = Document(ConvertedToDictionary)
+        doc = trp.Document(ConvertedToDictionary)
         for page in doc.pages:
             for table in page.tables:
                 print((page.tables).index(table))
