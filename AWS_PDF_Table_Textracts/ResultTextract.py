@@ -59,15 +59,9 @@ def GetTableFromTextractResult(pages, jobId):
                     i = 0
                     rowst = {}
                     for c, cell in enumerate(row.cells):
-                        if (page.tables).index(table) == 0 and (table.rows).index(row) > 0 :
-                            rowst[str((table.rows)[0].cells[i])] = str(cell)
-                        if (page.tables).index(table) == 1 and (table.rows).index(row) > 1 :
-                            rowst[str((table.rows)[1].cells[i])] = str(cell)
+                        rowst[str((table.rows)[0].cells[i])] = str(cell)
                         i +=1
-                    if (page.tables).index(table) == 0 and (table.rows).index(row) > 0 :
-                        Table.append(rowst)
-                    if (page.tables).index(table) == 1 and (table.rows).index(row) > 1 :
-                        Table.append(rowst)
+                    Table.append(rowst)
                 print(Table)
                 UploadResultToS3Bucket(jobId, (page.tables).index(table), Table)
     except Exception as exception :
