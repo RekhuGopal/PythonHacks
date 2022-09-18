@@ -7,7 +7,7 @@ from operator import contains
 from trp import Document
 
 # Opening JSON file
-f = open('F:\RekhuAll\GitRepos\PythonHacks\AWS_PDF_Table_Textracts\Sample1_MarkedUp.json')
+f = open('F:\RekhuAll\AWS\AWS_PDF_Table_Textracts\Sample1_MarkedUp.json')
 
 # returns JSON object as
 # a dictionary
@@ -15,6 +15,14 @@ data = json.load(f)
 
 doc = Document(data)
 
+for page in doc.pages: 
+    for line in page.lines:
+        for word in line.words:
+            print(len(word))
+
+
+
+'''
 for page in doc.pages:
     for table in page.tables:
         print((page.tables).index(table))
@@ -33,7 +41,7 @@ for page in doc.pages:
             if (page.tables).index(table) == 1 and (table.rows).index(row) > 1 :
                 Table.append(rowst)
         print(Table)
-            
+'''            
 
 # Closing file
 f.close()
