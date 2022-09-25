@@ -9,6 +9,19 @@ import os
 textract = boto3.client('textract', region_name='us-east-1')
 s3_client = boto3.resource('s3', region_name='us-east-1')
 Bucket_name = "textractresultsd"
+Table = []
+
+def PoliceData(policestrg):
+    try:
+        if 'NOT_SELECTED,' in policestrg :
+            return policestrg.replace("NOT_SELECTED,", "")
+        if 'Qualis' in policestrg :
+            return policestrg.replace("Qualis", "")
+        if 'Side Seite des Rades' in policestrg :
+            return policestrg.replace("Side Seite des Rades", "")
+        return policestrg
+    except Exception as exception :
+        print("Exception in GetTableFromTextractResult and error is {} ".format(exception))
 
 def GetResults(jobId):
         maxResults = 1000
@@ -31,10 +44,10 @@ def GetResults(jobId):
         pages = json.dumps(pages)
         return pages
 
-def UploadResultToS3Bucket(jobId, tableIndex, data):
+def UploadResultToS3Bucket(jobId, data):
     try:
         print("Inside upload results to S3 bucket..")
-        dynamicfilename = jobId +"_"+str(tableIndex)+".json"
+        dynamicfilename = jobId +".json"
         print("Dynamic file name is :", dynamicfilename)
         local_file_path = "/tmp/textractresult.json"
         with open(local_file_path, 'w') as fp:
@@ -47,25 +60,53 @@ def UploadResultToS3Bucket(jobId, tableIndex, data):
     except Exception as exception :
         print("Exception in upload to s3 bucket and error is {} ".format(exception))
 
-def GetTableFromTextractResult(pages, jobId):
+def GetFromTextractResult(pages):
+    try:
+        ConvertedToDictionary = json.loads(pages)
+        doc = trp.Document(ConvertedToDictionary)
+        i = 0
+        for page in doc.pages:
+            wagen_number = page.form.getFieldByKey('Wagennummer:')
+            print(wagen_number.key.text)
+            print(wagen_number.value.text)
+
+            date_data = page.form.getFieldByKey('Datum')
+            print(date_data.key.text)
+            print(date_data.value.text)
+            if str(wagen_number.value.text) and str(date_data.value.text):
+                formdata = {}
+                formdata[str(wagen_number.key.text)] = str(wagen_number.value.text)
+                formdata[str(date_data.key.text)] = str(date_data.value.text)
+                i +=1
+        if i > 0:
+            print("wagon number and date found")
+            Table.append(formdata)
+        return True
+    except Exception as exception :
+        print("Exception in GetTableFromTextractResult and error is {} ".format(exception))
+        return False
+
+def GetTableTextractResult(pages, jobId):
     try:
         ConvertedToDictionary = json.loads(pages)
         doc = trp.Document(ConvertedToDictionary)
         for page in doc.pages:
             for table in page.tables:
-                print((page.tables).index(table))
-                Table = []
-                for r, row in enumerate(table.rows):
-                    i = 0
-                    rowst = {}
-                    for c, cell in enumerate(row.cells):
-                        rowst[str((table.rows)[0].cells[i])] = str(cell)
-                        i +=1
-                    Table.append(rowst)
-                print(Table)
-                UploadResultToS3Bucket(jobId, (page.tables).index(table), Table)
+                if (page.tables).index(table) == 1:
+                    for r, row in enumerate(table.rows):
+                        if (table.rows).index(row) > 1:
+                            i = 0
+                            rowst = {}
+                            for c, cell in enumerate(row.cells):
+                                rowst[str((table.rows)[1].cells[i]).strip()] = PoliceData(str(cell)).strip()
+                                i +=1
+                            Table.append(rowst)
+                    print(Table)
+                    UploadResultToS3Bucket(jobId, Table)
+        return True
     except Exception as exception :
         print("Exception in GetTableFromTextractResult and error is {} ".format(exception))
+        return False
 
 def lambda_handler(event, context):
     print("event collected from sqs is : {}".format(event))
@@ -77,7 +118,14 @@ def lambda_handler(event, context):
     if qmessage['Status'] == "SUCCEEDED" and qmessage['JobId'] :
         result = GetResults(qmessage['JobId'])
         if result:
-            GetTableFromTextractResult(result, qmessage['JobId'])
+            if GetFromTextractResult(result) :
+                print ("Date and wagonnumber added to list..")
+                if GetTableTextractResult(result, qmessage['JobId']) :
+                    print ("Process completed successfully..")
+                else:
+                    print ("Table data not retrieved..")
+            else:
+                print ("Date and wagonnumber retrieval failed..")
         else:
             print("results did not retrieved..")
     else:

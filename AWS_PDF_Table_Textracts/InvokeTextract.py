@@ -3,7 +3,7 @@ import boto3
 import time
 from botocore.exceptions import ClientError
 
-SNSTopicArn = "arn:aws:sns:us-east-1:357171621133:AmazonTextractTopic1662190593066"
+SNSTopicArn = "arn:aws:sns:us-east-1:357171621133:AmazonTextractTopic1664002484231"
 roleArn = "arn:aws:iam::357171621133:role/AWS_PDF_Table_Textract_Role"
 textract = boto3.client('textract', region_name='us-east-1')
 
