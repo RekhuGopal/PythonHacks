@@ -55,7 +55,7 @@ def delete_file(bucket, key_name):
 
 '''
 ## Upload a file to bucket
-result_upload = upload_file("F:\\RekhuAll\\AzurePoC\\0C7A2552.JPG", "s3boto3test1", "0C7A2552.JPG")
+result_upload = upload_file("F:\\RekhuAll\\AzurePoC\\0C7A2552.JPG", bucket, object_name)
 if result_upload :
     print("bucket file uploaded successfully..!")
 else:
@@ -63,8 +63,18 @@ else:
 '''
 
 '''
+## Get a file tag which is job id from bucket
+result_get_tag = get_s3_object_tag(bucket, object_name)
+if result_get_tag :
+    print(result_get_tag)
+    print("bucket file tags retrieved successfully..!")
+else:
+    print("bucket file tags retrieve failed..!")
+'''
+
+'''
 ## Download a file from bucket
-result_download = download_file("F:\\RekhuAll\\AzurePoC\\0C7A2552.JPG", "s3boto3test1", "0C7A2552.JPG")
+result_download = download_file("F:\\RekhuAll\\AzurePoC\\0C7A2552.JPG", bucket, object_name)
 if result_download :
     print("bucket file downloaded successfully..!")
 else:
