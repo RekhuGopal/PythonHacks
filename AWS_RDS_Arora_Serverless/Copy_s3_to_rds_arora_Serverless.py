@@ -4,6 +4,7 @@ import os
 import boto3
 import csv
 
+## This is the tool
 def lambda_handler(event, context):
     print("event collected is {}".format(event))
     for record in event['Records'] :
