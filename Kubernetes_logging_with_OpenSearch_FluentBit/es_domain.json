@@ -1,0 +1,39 @@
+{
+    "DomainName": "oseks-logging",
+    "EngineVersion": "OpenSearch_1.0",
+    "ClusterConfig": {
+        "InstanceType": "r5.large.search",
+        "InstanceCount": 1,
+            "DedicatedMasterEnabled": false,
+            "ZoneAwarenessEnabled": false,
+            "WarmEnabled": false
+        },
+    "EBSOptions": {
+        "EBSEnabled": true,
+        "VolumeType": "gp2",
+        "VolumeSize": 100
+    },
+    "AccessPolicies":  "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Principal\":{\"AWS\":\"*\"},\"Action\":\"es:ESHttp*\",\"Resource\":\"arn:aws:es:us-east-1:357171621133:domain/oseks-logging/*\"}]}",
+    "SnapshotOptions": {},
+    "CognitoOptions": {
+        "Enabled": false
+    },
+    "EncryptionAtRestOptions": {
+        "Enabled": true
+    },
+    "NodeToNodeEncryptionOptions": {
+        "Enabled": true
+    },
+    "DomainEndpointOptions": {
+        "EnforceHTTPS": true,
+        "TLSSecurityPolicy": "Policy-Min-TLS-1-0-2019-07"
+    },
+    "AdvancedSecurityOptions": {
+        "Enabled": true,
+        "InternalUserDatabaseEnabled": true,
+        "MasterUserOptions": {
+            "MasterUserName": "oseks",
+            "MasterUserPassword": "MysuperSct_Ek1$"
+        }
+    }
+}

@@ -1,0 +1,12 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Action": [
+                "es:ESHttp*"
+            ],
+            "Resource": "arn:aws:es:us-east-1:357171621133:domain/oseks-logging",
+            "Effect": "Allow"
+        }
+    ]
+}
