@@ -46,6 +46,9 @@ finalresult =  result.replace("null", "\"NoValue\"")
  # Create a new SES resource and specify a region.
 client = boto3.client("ses",region_name="us-east-1")
 
+response = client.get_template(TemplateName='NewAPIResultsMail')
+print(response['ResponseMetadata']['HTTPStatusCode'])
+'''
 # Create SES templates
 response = client.update_template(
     Template={
@@ -106,7 +109,7 @@ response = client.update_template(
                     {{/each}}
                 </table>
 
-                <p style="font-family:'Futura Medium'">Please check with jaklacynski@protonmail.com for any queries on the email</p>
+                <p style="font-family:'Futura Medium'">Please check with jaklacynski@protonmail.com for any queries on the email.</p>
                 
                 <p style="font-family:'Futura Medium'">Best Regards,</p>
                 <p style="font-family:'Futura Medium'">John Klacynski</p>
@@ -130,15 +133,15 @@ response = client.update_template(
                        {{content}}
                      {{/each}}
 
-                Please check with jaklacynski@protonmail.com for any queries on the email
+                Please check with jaklacynski@protonmail.com for any queries on the email.
                 
                 Best Regards,
                 John Klacynski
                 """
   }
 )
-
-
+'''
+'''
 ####### Send templated emails.
 Sendresponse = client.send_templated_email(
     Source='vrchinnarathod@gmail.com',
@@ -152,5 +155,6 @@ Sendresponse = client.send_templated_email(
 )
 
 print(Sendresponse)
+'''
 
 
