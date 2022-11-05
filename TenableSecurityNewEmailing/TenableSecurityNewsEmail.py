@@ -4,11 +4,10 @@ import boto3
 from botocore.exceptions import ClientError
 import json
 
-
 class NewsMails:
     def __init__(self):
         client = boto3.resource('dynamodb', region_name="us-east-1")
-        self.table = client.Table('AllEmails')
+        self.table = client.Table('NewSubscribers')
         self.NewsApikey = '2b8bbd66c2e2403692a4e778e0697c21'
         self.ses_client = boto3.client('ses',region_name="us-east-1")
 
@@ -318,7 +317,7 @@ class NewsMails:
                 """
             # Provide the contents of the email.
             send_mail_response = self.ses_client.send_email(
-                Source="Cloud-Quick-Labs@automations.com",
+                Source="vrchinnarathod@gmail.com",
                 Destination={
                     'ToAddresses': ["vrchinnarathod@gmail.com"]
                 },
