@@ -1,0 +1,74 @@
+##################### Pre-requisite ##########################################################################################
+## AWS CLI
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+## Chocolatey links (installer - for argocd cli deployment)
+https://chocolatey.org/install
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## kubectl
+https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/
+
+## Helm
+https://helm.sh/docs/intro/install/
+##############################################################################################################################
+##################### Create AWS EKS clsuster ################################################################################
+## Create EKS cluster
+eksctl create cluster --name prometheusgrafana --node-type t2.large --nodes 1 --nodes-min 1 --nodes-max 2 --region eu-west-1 --zones=eu-west-1a,eu-west-1b,eu-west-1c
+
+## Get EKS Cluster service
+eksctl get cluster --name prometheusgrafana --region eu-west-1
+
+## Update Kubeconfig 
+aws eks update-kubeconfig --name prometheusgrafana
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name prometheusgrafana --region eu-west-1
+
+## updated kubeconfig
+aws eks update-kubeconfig --region eu-west-1 --name prometheusgrafana
+
+################################################## Install and View EKS Prometheus and Grafana #######################################################
+
+1.Check if kubectl is working as expected
+  kubectl get nodes
+  
+2.Create a Namespace for Grafana installation
+  kubectl create namespace grafanaapp
+  
+3. Deploy grafana app on EKS
+  kubectl apply -f ./demo-grafana-test.yaml -n grafanaapp
+  
+4. Deploy Kubernetes metric server which aggregate resources usage data from EKS
+  kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+  
+5. Create Namespaces - "Grafan" and "Prometheus" to deploy the resources.
+   kubectl create namespace prometheus
+   kubectl create namespace grafana
+   
+6. Deploying Prometheus
+  6.1 Add Helm repositories of community prometheus
+   helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+
+  6.2 Deploy the prometheus
+  helm upgrade -i prometheus prometheus-community/prometheus --namespace prometheus --set alertmanager.persistentVolume.storageClass="gp2",server.persistentVolume.storageClass="gp2"
+
+7. Deploying Grafana
+  kubectl apply -f ./grafana.yaml -n grafana
+
+8. To access prometheus with port forwarding 
+   kubectl port-forward -n prometheus deploy/prometheus-server 9090:9090
+
+   Access with URL -  http://localhost:9090/
+
+9. To access Grafan with port forwarding (Note: you might need to close the above session open this)
+    kubectl port-forward -n grafana deploy/grafana 3000:3000
+
+    Access with URL -  http://localhost:3000/
+
+#############################################################################################################################################
