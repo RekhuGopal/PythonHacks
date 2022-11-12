@@ -1,0 +1,45 @@
+{
+	"Items":[
+	{
+  "sn": {
+    "S": "1"
+  },
+  "brand": {
+    "S": "Twitter"
+  },
+  "created_at": {
+    "S": "10/24/22"
+  },
+  "email": {
+    "S": "vrchinnarathod@gmail.com"
+  },
+  "google-search": {
+    "S": "Cricket"
+  },
+  "user": {
+    "S": "CloudQuickLab1"
+  }
+},
+{
+  "sn": {
+    "S": "2"
+  },
+  "brand": {
+    "S": "Cvent"
+  },
+  "created_at": {
+    "S": "10/26/22"
+  },
+  "email": {
+    "S": "vrchinnarathod@gmail.com"
+  },
+  "google-search": {
+    "S": "Football"
+  },
+  "user": {
+    "S": "CloudQuickLab2"
+  }
+}
+	
+	] 
+} 

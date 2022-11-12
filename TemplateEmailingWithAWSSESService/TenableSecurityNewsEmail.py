@@ -116,10 +116,10 @@ class NewsMails:
                                                         {{/each}}
                                                     </table>
 
-                                                    <p style="font-family:'Futura Medium'">Please check with jaklacynski@protonmail.com for any queries on the email.</p>
+                                                    <p style="font-family:'Futura Medium'">Please check with vrchinnarathod@gmail.com for any queries on the email.</p>
                                                     
                                                     <p style="font-family:'Futura Medium'">Best Regards,</p>
-                                                    <p style="font-family:'Futura Medium'">John Klacynski</p>
+                                                    <p style="font-family:'Futura Medium'">Cloud Quick Labs</p>
                                                     </body>
                                                     </html>
                                                     """,
@@ -140,10 +140,10 @@ class NewsMails:
                                                         {{content}}
                                                         {{/each}}
 
-                                                    Please check with jaklacynski@protonmail.com for any queries on the email.
+                                                    Please check with vrchinnarathod@gmail.com for any queries on the email.
                                                     
                                                     Best Regards,
-                                                    John Klacynski
+                                                    Cloud Quick Labs
                                                     """
                                     }
                                 )
@@ -157,25 +157,25 @@ class NewsMails:
                                         "SubjectPart": "News On {{ SearchString }} for Date : {{ISODate}}",
                                         "HtmlPart": """<html>
                                                     <head>
-                                                    <style>
-                                                        table, td {
-                                                        border: 1px solid black;
-                                                        border-collapse: collapse;
-                                                        }
-                                                        
-                                                        
-                                                        th {
-                                                        border: 1px solid black;
-                                                        border-collapse: collapse;
-                                                        font-weight: bold
-                                                        }
-                                                        
-                                                        
-                                                        td, th {
-                                                        padding-left: 15px;
-                                                        text-align: left;
-                                                        }
-                                                    </style>
+                                                        <style>
+                                                            table, td {
+                                                            border: 1px solid black;
+                                                            border-collapse: collapse;
+                                                            }
+                                                            
+                                                            
+                                                            th {
+                                                            border: 1px solid black;
+                                                            border-collapse: collapse;
+                                                            font-weight: bold
+                                                            }
+                                                            
+                                                            
+                                                            td, th {
+                                                            padding-left: 15px;
+                                                            text-align: left;
+                                                            }
+                                                        </style>
                                                     </head>
                                                     <body>
                                                     <p style="font-family:'Futura Medium'">Hello {{ UserName }},</p>
@@ -210,10 +210,10 @@ class NewsMails:
                                                         {{/each}}
                                                     </table>
 
-                                                    <p style="font-family:'Futura Medium'">Please check with jaklacynski@protonmail.com for any queries on the email.</p>
+                                                    <p style="font-family:'Futura Medium'">Please check with vrchinnarathod@gmail.com for any queries on the email.</p>
                                                     
                                                     <p style="font-family:'Futura Medium'">Best Regards,</p>
-                                                    <p style="font-family:'Futura Medium'">John Klacynski</p>
+                                                    <p style="font-family:'Futura Medium'">Cloud Quick Labs</p>
                                                     </body>
                                                     </html>
                                                     """,
@@ -234,10 +234,10 @@ class NewsMails:
                                                         {{content}}
                                                         {{/each}}
 
-                                                    Please check with jaklacynski@protonmail.com for any queries on the email.
+                                                    Please check with vrchinnarathod@gmail.com for any queries on the email.
                                                     
                                                     Best Regards,
-                                                    John Klacynski
+                                                    Cloud Quick Labs
                                                     """
                                     }
                                 )
@@ -268,7 +268,7 @@ class NewsMails:
         try:
             print("Sending failed email now....")
             body_text = """
-                Hello John,
+                Hello,
                 
                 Sending news report automation has encountered an error..!!          
                 Please check CloudWatch logs of lambda to get more insights.
@@ -303,7 +303,7 @@ class NewsMails:
                 </style>
                 </head>
                 <body>
-                <p style="font-family:'Futura Medium'">Hello John,</p>
+                <p style="font-family:'Futura Medium'">Hello Labs,</p>
 
                 <p style="font-family:'Futura Medium'">Sending news report automation has encountered an error..!!</p>
                 <p style="font-family:'Futura Medium'">Please check CloudWatch logs of lambda to get more insights.</p>
@@ -358,7 +358,7 @@ def lambda_handler(event, context):
                 if NewResults :
                     print("News results retrieved hence email now")
                     result = json.dumps(NewResults)
-                    finalresultstr =  result.replace("null", "\"NoValue\"")
+                    finalresultstr =  result.replace("null", "\"NA\"")
                     OjectNewsMails.Email_News( "vrchinnarathod@gmail.com", tableitem['email'], finalresultstr)
                     ReasonForFail = "News report email sent for user {} with email {} for search string {}".format(tableitem['user'], tableitem['email'], tableitem['google-search'])
                     print(ReasonForFail)
