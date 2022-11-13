@@ -1,0 +1,27 @@
+1. Install Pulumi
+choco install pulumi
+
+2. Install Language Runtime
+install python3-venv python3-pip.
+
+3. Configure Pulumi to access your AWS account 
+$env:AWS_ACCESS_KEY_ID = "<YOUR_ACCESS_KEY_ID>"; 
+$env:AWS_SECRET_ACCESS_KEY = "<YOUR_SECRET_ACCESS_KEY>"
+
+4. Create a New Project
+pulumi new aws-python
+
+5. Deploy stack 
+pulumi up
+
+6. Get the output of stack
+pulumi stack output bucket_name
+
+7. Updated with index.html and run
+pulumi up
+
+8. verify the object was created in your bucket
+aws s3 ls $(pulumi stack output bucket_name)
+
+9. Deploy the Stack
+pulumi destroy
