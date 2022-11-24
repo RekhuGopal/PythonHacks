@@ -1,0 +1,6 @@
+name: AWS_EKS_Creation_Deployments
+description: A minimal AWS Python Pulumi program
+runtime:
+    name: python
+    options:
+        virtualenv: venv

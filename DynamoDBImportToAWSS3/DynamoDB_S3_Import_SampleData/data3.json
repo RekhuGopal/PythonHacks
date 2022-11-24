@@ -1,0 +1,5 @@
+{"Item":{"PK":{"S":"cus1000"},"SK":{"S":"cus2000"},"record_type":{"S":"feature"},"customer_id":{"N":"1000"},"feature_id":{"N":"2000"},"feature_scalar":{"N":"0.8540000"},"feature_doc":{"S":"E"}}}
+{"Item":{"PK":{"S":"cus1001"},"SK":{"S":"cus2002"},"record_type":{"S":"feature"},"customer_id":{"N":"1001"},"feature_id":{"N":"2002"},"feature_scalar":{"N":"0.2070000"},"feature_doc":{"S":"E"}}}
+{"Item":{"PK":{"S":"cus1001"},"SK":{"S":"cus2003"},"record_type":{"S":"feature"},"customer_id":{"N":"1001"},"feature_id":{"N":"2003"},"feature_scalar":{"N":"0.6440000"},"feature_doc":{"S":"G"}}}
+{"Item":{"PK":{"S":"cus1002"},"SK":{"S":"cus2003"},"record_type":{"S":"feature"},"customer_id":{"N":"1002"},"feature_id":{"N":"2003"},"feature_scalar":{"N":"0.6170000"},"feature_doc":{"S":"E"}}}
+{"Item":{"PK":{"S":"cus1002"},"SK":{"S":"cus2004"},"record_type":{"S":"feature"},"customer_id":{"N":"1002"},"feature_id":{"N":"2004"},"feature_scalar":{"N":"0.7220000"},"feature_doc":{"S":"A"}}}
