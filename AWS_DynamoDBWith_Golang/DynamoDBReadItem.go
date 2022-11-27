@@ -35,7 +35,7 @@ func main() {
 	// snippet-start:[dynamodb.go.read_item.call]
 	tableName := "Movies"
 	movieName := "The Big New Movie"
-	movieYear := "2015"
+	movieYear := "2016"
 
 	result, err := svc.GetItem(&dynamodb.GetItemInput{
 		TableName: aws.String(tableName),
