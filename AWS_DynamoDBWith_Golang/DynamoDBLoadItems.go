@@ -23,7 +23,7 @@ type Item struct {
 
 // Get table items from JSON file
 func getItems() []Item {
-	raw, err := ioutil.ReadFile("./.movie_data.json")
+	raw, err := ioutil.ReadFile("./movie_data.json")
 	if err != nil {
 		log.Fatalf("Got error reading file: %s", err)
 	}

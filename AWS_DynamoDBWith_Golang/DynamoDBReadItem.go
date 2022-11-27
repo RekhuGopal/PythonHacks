@@ -2,8 +2,6 @@ package main
 
 // snippet-start:[dynamodb.go.read_item.imports]
 import (
-	"errors"
-
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
@@ -52,12 +50,6 @@ func main() {
 	})
 	if err != nil {
 		log.Fatalf("Got error calling GetItem: %s", err)
-	}
-
-	// snippet-start:[dynamodb.go.read_item.unmarshall]
-	if result.Item == nil {
-		msg := "Could not find '" + *title + "'"
-		return nil, errors.New(msg)
 	}
 
 	item := Item{}
