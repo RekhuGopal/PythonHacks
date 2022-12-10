@@ -1,0 +1,58 @@
+##################### Pre-requisite ##########################################################################################
+## AWS CLI
+https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+## Chocolatey links (installer - for argocd cli deployment)
+https://chocolatey.org/install
+
+## Pre-requisite links
+https://docs.aws.amazon.com/eks/latest/userguide/getting-started-eksctl.html
+
+## kubectl
+https://kubernetes.io/docs/tasks/tools/install-kubectl-windows/
+
+## Helm
+https://helm.sh/docs/intro/install/
+##############################################################################################################################
+##################### Create AWS EKS clsuster ################################################################################
+## Create EKS cluster
+eksctl create cluster --name ekscicd --node-type t2.large --nodes 1 --nodes-min 1 --nodes-max 2 --region eu-west-1 --zones=eu-west-1a,eu-west-1b,eu-west-1c
+
+## Get EKS Cluster service
+eksctl get cluster --name ekscicd --region eu-west-1
+
+## Update Kubeconfig 
+aws eks update-kubeconfig --name ekscicd
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name ekscicd --region eu-west-1
+
+## updated kubeconfig
+aws eks update-kubeconfig --region eu-west-1 --name ekscicd
+
+################################################## Install and View EKS Prometheus and Grafana #######################################################
+
+-------------------------------------------------------------------------------------------
+1. Create IAM ROLE with Trust
+aws iam create-role --role-name EksWorkshopCodeBuildKubectlRole --assume-role-policy-document "$TRUST" --output text --query 'Role.Arn'
+
+
+2. Attach IAM Policy 
+aws iam put-role-policy --role-name EksWorkshopCodeBuildKubectlRole --policy-name eks-describe --policy-document file:///tmp/iam-role-policy
+
+
+3. MODIFY AWS-AUTH CONFIGMAP
+kubectl get -n kube-system configmap/aws-auth -o yaml | awk "/mapRoles: \|/{print;print \"$ROLE\";next}1" > /tmp/aws-auth-patch.yml
+
+kubectl patch configmap/aws-auth -n kube-system --patch "$(cat /tmp/aws-auth-patch.yml)"
+
+
+4. FORK SAMPLE REPOSITORY
+https://github.com/rnzsgh/eks-workshop-sample-api-service-go
+
+
+5. GITHUB ACCESS TOKEN
+
