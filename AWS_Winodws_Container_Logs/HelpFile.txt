@@ -1,0 +1,64 @@
+##################### Create AWS EKS clsuster ################################################################################
+## Create EKS cluster
+eksctl create cluster --name my-eks --node-type t2.large --nodes 1 --nodes-min 1 --nodes-max 2 --region eu-west-1 --zones=eu-west-1a,eu-west-1b,eu-west-1c
+
+eksctl create cluster --name my-eks --region eu-west-1
+
+## Create node groups
+eksctl create nodegroup --region eu-west-1 --cluster my-eks --name ng-windows --node-type t2.large --nodes 3 --nodes-min 1 --nodes-max 4 --managed=false --node-ami-family WindowsServer2019FullContainer
+
+## Get EKS Cluster service
+eksctl get cluster --name my-eks --region eu-west-1
+
+## Update Kubeconfig 
+aws eks update-kubeconfig --name my-eks --region eu-west-1
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name my-eks --region eu-west-1
+
+###############################################################################################################################
+######################################### forward logs to cloudwatch ##########################################################
+1. Validate the Windows worker nodes are up and running.
+eksctl utils install-vpc-controllers --cluster my-eks --approve  --region eu-west-1
+2. Create Kubernetes namespace amazon-cloudwatch in which Fluent Bit runs.
+2.1) create the namespace
+kubectl apply -f ./namespace.yaml
+3. Configure the AWS Identity and Access Management (AWS IAM) policies required for enabling Fluent Bit to send the logs to required destinations.
+3.1) Amazon EKS cluster has an existing IAM OIDC provider
+# Please replace my-eks and eu-west-1 with the actual values 
+# before running the command.
+aws eks describe-cluster --name my-eks --region eu-west-1 --query "cluster.identity.oidc.issuer" --output text
+3.2) create an IAM OIDC provider
+# Please replace my-eks and eu-west-1 with the actual values 
+# before running the command.
+eksctl utils associate-iam-oidc-provider  --region eu-west-1 --cluster my-eks --approve 
+3.3) create the IAM policy.
+aws iam create-policy --policy-name fluent-bit-policy --policy-document file://fluent-bit-policy.json
+3.4) create IAM service account
+# Please replace my-eks, eu-west-1, and 
+# <FLUENT_BIT_POLICY_ARN> with the actual values before running the commands.
+eksctl create iamserviceaccount --cluster my-eks --region eu-west-1 --attach-policy-arn "arn:aws:iam::357171621133:policy/fluent-bit-policy" --name fluent-bit-windows --namespace amazon-cloudwatch --approve
+4. Create a config map with the required configuration.
+4.1) create a config map for providing configuration options to Fluent Bit
+# Please replace my-eks and eu-west-1 with the actual values before running the commands.
+kubectl create configmap fluent-bit-cluster-info --from-literal=cluster.name=my-eks --from-literal=logs.region=eu-west-1 --from-literal=read.head='Off' -n amazon-cloudwatch 
+5. [Optional] Build a Windows container image containing IIS and LogMonitor.
+6. Deploy Fluent Bit on Windows node as a DaemonSet.
+6.1) Copy the following manifest into a file named fluent-bit-daemon-set.yaml
+6.2) Deploy this manifest
+kubectl apply -f ./fluent-bit-daemon-set.yaml
+7. Deploy Windows container image containing IIS and LogMonitor.
+7.1) Create a deployment file named windows_manifest.yaml
+7.2) Deploy the manifest
+kubectl apply -f ./windows_manifest.yaml
+8. [Optional] Access the IIS pods to generate logs.
+8.1) Run the following command to log into your container:
+kubectl -it exec <your_winiis_pod_name> powershell
+8.2) Run the following command to hit the web server
+Invoke-WebRequest winiis -UseBasicParsing
+9. Checking logs on Amazon CloudWatch logs.
+10. Cleanup the created resources.
+#################################################################################################################################

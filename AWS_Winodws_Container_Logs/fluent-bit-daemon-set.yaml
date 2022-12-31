@@ -1,0 +1,200 @@
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: fluent-bit-windows-role
+  namespace: amazon-cloudwatch
+rules:
+  - nonResourceURLs:
+      - /metrics
+    verbs:
+      - get
+  - apiGroups: [""]
+    resources:
+      - namespaces
+      - pods
+      - pods/logs
+      - nodes
+      - nodes/proxy
+    verbs: ["get", "list", "watch"]
+---
+kind: ClusterRoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: fluent-bit-windows-role-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: fluent-bit-windows-role
+subjects:
+# Assuming that the Service Account was created earlier with name fluent-bit-windows.
+- kind: ServiceAccount
+  name: fluent-bit-windows
+  namespace: amazon-cloudwatch
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-windows-config
+  namespace: amazon-cloudwatch
+  labels:
+    k8s-app: fluent-bit-windows
+data:
+  fluent-bit.conf: |
+    [SERVICE]
+        Flush                       5
+        Log_Level                   info
+        Daemon                      off
+        net.dns.resolver            LEGACY
+        Parsers_File                parsers.conf
+        
+    @INCLUDE application-log.conf
+ 
+  application-log.conf: |
+    [INPUT]
+        Name                tail
+        Tag                 application.*
+        Exclude_Path        C:\\var\\log\\containers\\fluent-bit*
+        Path                C:\\var\\log\\containers\\*.log
+        Docker_Mode         On
+        Docker_Mode_Flush   5
+        Docker_Mode_Parser  container_firstline
+        Parser              docker
+        DB                  C:\\var\\fluent-bit\\state\\flb_container.db
+        Read_from_Head      ${READ_FROM_HEAD}
+ 
+    [INPUT]
+        Name                tail
+        Tag                 application.*
+        Path                C:\\var\\log\\containers\\fluent-bit*
+        Parser              docker
+        DB                  C:\\var\\fluent-bit\\state\\flb_log.db
+        Read_from_Head      ${READ_FROM_HEAD}
+ 
+    [FILTER]
+        Name                kubernetes
+        Match               application.*
+        Kube_URL            https://kubernetes.default.svc.cluster.local:443
+        Kube_Tag_Prefix     application.C.var.log.container.
+        Merge_Log           On
+        Merge_Log_Key       log_processed
+        K8S-Logging.Parser  On
+        K8S-Logging.Exclude Off
+        Labels              Off
+        Annotations         Off
+        Use_Kubelet         Off
+        Buffer_Size         0
+ 
+    [OUTPUT]
+        Name                cloudwatch_logs
+        Match               application.*_default_*
+        region              ${AWS_REGION}
+        log_group_name      /aws/containerinsights/${CLUSTER_NAME}/default
+        log_stream_prefix   ${HOST_NAME}-
+        auto_create_group   true
+        extra_user_agent    container-insights
+ 
+    [OUTPUT]
+        Name                cloudwatch_logs
+        Match               application.*_amazon-cloudwatch_*
+        region              ${AWS_REGION}
+        log_group_name      /aws/containerinsights/${CLUSTER_NAME}/amazon-cloudwatch
+        log_stream_prefix   ${HOST_NAME}-
+        auto_create_group   true
+        extra_user_agent    container-insights
+ 
+  parsers.conf: |
+    [PARSER]
+        Name                docker
+        Format              json
+        Time_Key            time
+        Time_Format         %Y-%m-%dT%H:%M:%S.%LZ
+ 
+    [PARSER]
+        Name                container_firstline
+        Format              regex
+        Regex               (?<log>(?<="log":")\S(?!\.).*?)(?<!\\)".*(?<stream>(?<="stream":").*?)".*(?<time>\d{4}-\d{1,2}-\d{1,2}T\d{2}:\d{2}:\d{2}\.\w*).*(?=})
+        Time_Key            time
+        Time_Format         %Y-%m-%dT%H:%M:%S.%LZ
+ 
+---
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: fluent-bit-windows
+  namespace: amazon-cloudwatch
+  labels:
+    k8s-app: fluent-bit-windows
+    version: v1
+    kubernetes.io/cluster-service: "true"
+spec:
+  selector:
+    matchLabels:
+      k8s-app: fluent-bit-windows
+  template:
+    metadata:
+      labels:
+        k8s-app: fluent-bit-windows
+        version: v1
+        kubernetes.io/cluster-service: "true"
+    spec:
+      containers:
+      - name: fluent-bit-windows
+        image: public.ecr.aws/aws-observability/aws-for-fluent-bit:windowsservercore-latest
+        imagePullPolicy: Always
+        env:
+          - name: AWS_REGION
+            valueFrom:
+              configMapKeyRef:
+                name: fluent-bit-cluster-info
+                key: logs.region
+          - name: CLUSTER_NAME
+            valueFrom:
+              configMapKeyRef:
+                name: fluent-bit-cluster-info
+                key: cluster.name
+          - name: HOST_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: spec.nodeName
+          - name: READ_FROM_HEAD
+            valueFrom:
+              configMapKeyRef:
+                name: fluent-bit-cluster-info
+                key: read.head
+        resources:
+          limits:
+            memory: 600Mi
+          requests:
+            cpu: 500m
+            memory: 600Mi
+        volumeMounts:
+        # Only read only access to the following mounts is required
+        - name: fluentbitstate
+          mountPath: C:\var\fluent-bit\state
+        - name: varlog
+          mountPath: C:\var\log
+          readOnly: true
+        - name: varlibdockercontainers
+          mountPath: C:\ProgramData\docker\containers
+          readOnly: true
+        - name: fluent-bit-config
+          mountPath: C:\fluent-bit\etc\
+          readOnly: true          
+      terminationGracePeriodSeconds: 30
+      volumes:
+      - name: fluentbitstate
+        hostPath:
+          path: C:\var
+      - name: varlog
+        hostPath:
+          path: C:\var\log
+      - name: varlibdockercontainers
+        hostPath:
+          path: C:\ProgramData\docker\containers
+      - name: fluent-bit-config
+        configMap:
+          name: fluent-bit-windows-config
+      nodeSelector:
+        kubernetes.io/os: windows          
+      serviceAccountName: fluent-bit-windows
