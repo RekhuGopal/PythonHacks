@@ -5,8 +5,8 @@ import json
 ## CREATE
 '''
 print("Creating the TFC workspace dynamically...")
-url = 'https://app.terraform.io/api/v2/organizations/ecp-shell-titan/workspaces'
-TOKEN = 'bX6gDEYZqUY5Eg.atlasv1.ZRZRwRHzTUCxLwmDqgac8fER0nmM3BRXgG1BGrCWDFLFlguMJDQWGwANU00ZxGl9PAM'
+url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces'
+TOKEN = ''
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
           }
@@ -32,9 +32,9 @@ else:
 
 print("Updating the TFC workspace dynamically...")
 
-TOKEN = 'bX6gDEYZqUY5Eg.atlasv1.ZRZRwRHzTUCxLwmDqgac8fER0nmM3BRXgG1BGrCWDFLFlguMJDQWGwANU00ZxGl9PAM'
+TOKEN = ''
 Work_SpaceName = 'workspace-7'
-url = 'https://app.terraform.io/api/v2/organizations/ecp-shell-titan/workspaces/'+Work_SpaceName
+url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces/'+Work_SpaceName
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
           }
@@ -58,9 +58,9 @@ else:
 '''
 ## DELETE
 print("Deleting the TFC workspace dynamically...")
-TOKEN = 'bX6gDEYZqUY5Eg.atlasv1.ZRZRwRHzTUCxLwmDqgac8fER0nmM3BRXgG1BGrCWDFLFlguMJDQWGwANU00ZxGl9PAM'
+TOKEN = ''
 Work_SpaceName = 'workspace-3'
-url = 'https://app.terraform.io/api/v2/organizations/ecp-shell-titan/workspaces/'+Work_SpaceName
+url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces/'+Work_SpaceName
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
           }
@@ -77,9 +77,9 @@ else:
 '''
 ## READ
 print("Read the TFC workspace dynamically...")
-TOKEN = 'bX6gDEYZqUY5Eg.atlasv1.ZRZRwRHzTUCxLwmDqgac8fER0nmM3BRXgG1BGrCWDFLFlguMJDQWGwANU00ZxGl9PAM'
+TOKEN = ''
 Work_SpaceName = 'workspace-1'
-url = 'https://app.terraform.io/api/v2/organizations/ecp-shell-titan/workspaces/'+Work_SpaceName
+url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces/'+Work_SpaceName
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
           }
@@ -96,8 +96,8 @@ else:
 '''
 ## LIST ALL
 print("List all the TFC workspace dynamically...")
-TOKEN = 'bX6gDEYZqUY5Eg.atlasv1.ZRZRwRHzTUCxLwmDqgac8fER0nmM3BRXgG1BGrCWDFLFlguMJDQWGwANU00ZxGl9PAM'
-url = 'https://app.terraform.io/api/v2/organizations/ecp-shell-titan/workspaces'
+TOKEN = ''
+url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces'
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
           }
@@ -114,8 +114,8 @@ else:
 '''
 ## Lock Workspace ( Needs user access token)
 print("Lock the TFC workspace dynamically...")
-TOKEN = 'zeWz2yyhsCkzrw.atlasv1.YrB3VlBy3wgvS2sPEhokouCeETZdacbmHYmMRGtQCSlNokFjCBkLQgIcEoS2CR64oz8'
-Work_Id = 'ws-VphPC7zVuiKFc6xq'
+TOKEN = ''
+Work_Id = '<your ws id>'
 url = 'https://app.terraform.io/api/v2/workspaces/'+Work_Id+'/actions/lock'
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
@@ -137,8 +137,8 @@ else:
 
 ##UNLOCK Workspaces
 print("Lock the TFC workspace dynamically...")
-TOKEN = 'zeWz2yyhsCkzrw.atlasv1.YrB3VlBy3wgvS2sPEhokouCeETZdacbmHYmMRGtQCSlNokFjCBkLQgIcEoS2CR64oz8'
-Work_Id = 'ws-VphPC7zVuiKFc6xq'
+TOKEN = ''
+Work_Id = 'ws id'
 url = 'https://app.terraform.io/api/v2/workspaces/'+Work_Id+'/actions/unlock'
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
