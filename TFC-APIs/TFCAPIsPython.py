@@ -1,19 +1,20 @@
 import requests
 import json
-
+TOKEN = '<API token>'
 #http://man.hubwiz.com/docset/Terraform.docset/Contents/Resources/Documents/docs/enterprise/api/workspaces.html
-## CREATE
 '''
+## CREATE
+
 print("Creating the TFC workspace dynamically...")
 url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces'
-TOKEN = ''
+TOKEN = '<API token>'
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
           }
 payload={
     'data': {
       'attributes': {
-      'name': 'workspace-6'
+      'name': 'demoworkspace'
     },
     'type': 'workspaces'
   }
@@ -21,19 +22,19 @@ payload={
 TFCCreateresponse = requests.request("POST", url, headers=headers, data=json.dumps(payload))
 if  TFCCreateresponse.status_code == 201:
     print("retrieved the response..")
-    print(TFCCreateresponse)
+    print(TFCCreateresponse.content)
 
 else:
-    print(TFCCreateresponse)
+    print(TFCCreateresponse.content)
     print("Did not get the required response")
-'''
 '''
 ## UPDATE
 
+'''
 print("Updating the TFC workspace dynamically...")
 
-TOKEN = ''
-Work_SpaceName = 'workspace-7'
+#TOKEN = ''
+Work_SpaceName = 'demoworkspace'
 url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces/'+Work_SpaceName
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
@@ -41,7 +42,7 @@ headers = {'Authorization': 'Bearer '+TOKEN,
 payload={
     'data': {
       'attributes': {
-      'name': 'workspace-8'
+      'name': 'demoworkspace1'
     },
     'type': 'workspaces'
   }
@@ -54,12 +55,13 @@ if  TFCUpdateresponse.status_code == 200:
 else:
     print(TFCUpdateresponse)
     print("Did not get the required response")
+
 '''
 '''
 ## DELETE
 print("Deleting the TFC workspace dynamically...")
-TOKEN = ''
-Work_SpaceName = 'workspace-3'
+#TOKEN = ''
+Work_SpaceName = 'demoworkspace1'
 url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces/'+Work_SpaceName
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
@@ -73,12 +75,11 @@ else:
     print(TFCDeleteresponse)
     print("Did not get the required response")
 '''
-
 '''
 ## READ
 print("Read the TFC workspace dynamically...")
-TOKEN = ''
-Work_SpaceName = 'workspace-1'
+#TOKEN = ''
+Work_SpaceName = 'AWSBackup'
 url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces/'+Work_SpaceName
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
@@ -96,7 +97,7 @@ else:
 '''
 ## LIST ALL
 print("List all the TFC workspace dynamically...")
-TOKEN = ''
+#TOKEN = ''
 url = 'https://app.terraform.io/api/v2/organizations/<your org>/workspaces'
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
@@ -110,12 +111,11 @@ else:
     print(TFCListresponse.content)
     print("Did not get the required response")
 '''
-
 '''
 ## Lock Workspace ( Needs user access token)
 print("Lock the TFC workspace dynamically...")
-TOKEN = ''
-Work_Id = '<your ws id>'
+#TOKEN = ''
+Work_Id = '<workspace id>'
 url = 'https://app.terraform.io/api/v2/workspaces/'+Work_Id+'/actions/lock'
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
@@ -132,13 +132,13 @@ if  TFCLockResponse.status_code == 200:
 else:
     print(TFCLockResponse.content)
     print("Did not get the required response")
-
 '''
 
+'''
 ##UNLOCK Workspaces
 print("Lock the TFC workspace dynamically...")
-TOKEN = ''
-Work_Id = 'ws id'
+#TOKEN = ''
+Work_Id = '<workspace id>'
 url = 'https://app.terraform.io/api/v2/workspaces/'+Work_Id+'/actions/unlock'
 headers = {'Authorization': 'Bearer '+TOKEN,
            'Content-Type': 'application/vnd.api+json'
@@ -152,3 +152,4 @@ if  TFCUNLockResponse.status_code == 200:
 else:
     print(TFCUNLockResponse.content)
     print("Did not get the required response")
+'''

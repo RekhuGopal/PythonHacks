@@ -1,0 +1,18 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Principal": {
+                "Federated": "arn:aws:iam::357171621133:oidc-provider/gitlab.com"
+            },
+            "Action": "sts:AssumeRoleWithWebIdentity",
+            "Condition": {
+                "StringEquals": {
+                    "gitlab.com:aud": "https://gitlab.com",
+                    "gitlab.com:sub": "project_path:RekhuGopal/aws-oidc:ref_type:branch:ref:main"
+                }
+            }
+        }
+    ]
+}
