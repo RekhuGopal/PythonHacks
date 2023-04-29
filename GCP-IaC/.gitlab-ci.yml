@@ -1,0 +1,40 @@
+image:
+   name: hashicorp/terraform:light
+   entrypoint:
+     - '/usr/bin/env'
+     - 'PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+
+before_script:
+     -  rm -rf .terraform
+     -  terraform --version
+     -  mkdir -p ./creds
+     -  echo $SERVICEACCOUNT | base64 -d > ./creds/serviceaccount.json
+     -  terraform init
+
+stages:
+      - validate
+      - plan
+      - apply
+
+validate:
+   stage: validate
+   script:
+     - terraform validate
+
+plan:
+   stage: plan
+   script:
+     - terraform plan -out "planfile"
+   dependencies:
+     - validate
+   artifacts:
+     paths:
+       - planfile
+
+apply:
+   stage: apply
+   script:
+     - terraform apply -input=false "planfile"
+   dependencies:
+     - plan
+   when: manual
