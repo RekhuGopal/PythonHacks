@@ -1,13 +1,3 @@
 {
-  "type": "service_account",
-  "project_id": "cloudquicklabs",
-  "private_key_id": "4c5d874844c0d22dc8ae467507c92318d4dbbbf1",
-  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCw1l7u+yW4mzKB\nOt6W9XJSe6G2D/vEEln9oZwZ03sYBlBJru/P13uA6xrlAa/pWZi5d6+kBmNtTWx8\n9GOpPPY/vy5MjElVVa3Q4xQDRMu7moJK8AXxc76a7IJ11fXUftW5nG7NnuWSYYVN\nGHx1uNcb8s7Fb/uUU50JHYEtYn9jvJkEXFWznBKpLBZngLRZfySkn/YqsSNuOO4U\nnPHanHL2DC250AU0mQJRBj5LLfLyus3YUuPqnsuYZLDDjlSij2K5KDKaxiAnXKAP\nTsUzmzvL+OBDHdEvQf95fr9HGcj4+0/zsslz5aAqIp3OjdCambNGh6QAXiEi+1/g\n3ekUPZj3AgMBAAECggEADIOhzzwIWi09deYSciYSKOJ6j1WdOwMTdD6iEIp7QmLR\nVA2PB1XX9cfC16RMFxw8kcTLB2AJBudSP0YqNq6g5zeie/n3hz7wyytZXgvZy7/D\nlbBbs0++FDJFieI81doDSkcsPjKO9id0QABKGn3yAcEn6dKiv/HqLIbL0/Li/KNH\nOv1Azi1QEmylwDJ05ztbhx4qpyz8quv6n8TsYwAPPbsOoOAEUkottSo5jV/oOzKI\nhz/iJc0NxVIaN3bUH2DL8yQwsEYa838e+LTjizJMG2INl2yj5nv0rGkn8tN0rutJ\nzar/N5fkSTXQFiG3BXKnPCXaUlYf4bmjSHQ0gjqEDQKBgQDyUbCoh4VUrEKwq5Tb\nWJkLrgR1Q/YA2YRos7Q31Z6M3/xA8SzWDgHPifOaeABEQMYO5X8aSwR52E2BeYBV\nvCH5rEgvSfhzh6VHgxiMO8wbV7GzYZH3ouWW/JnwpRtYXhUz9MeoMVnsspPJOoW6\nTRDTxVEiN+40Js8qLxo08G2HMwKBgQC60kELfctFwND9eSglaj1HJavrUqnPvh02\nBtKxpujRccajgwr7lCZa4OjHTXtB8u2YLw2rJy+gYL4hLFsFHeym1GZKvCEYDWZ0\nZ5rOspS4M9WiUQGY4szR3AAeoAomi5LgaWgkSnXsPe9M6dIO3EuOYjIl4swc8TJF\nmtSM5cvXLQKBgQDK4sre0Fk6Q+Cyu3avEMdTmCfzZyuaGoVahNvnw9w0Z3V1injX\n4HJzqjVkqATRIMqzvkNlaFofCpQaS/i/z/1CZpUpwu1bDb+82G69O3PxkMMgRhlJ\nFgLVIDpj2lnC60MldVWV5Xw9SmeinHVLPytPpG4CEIJI+BWMZFO073lFMQKBgEWh\nG5EW324uATaXs3jOcexUhBD/DD9bUjPSszB3TwrQ5wIGU0+U1f7FGL0/iZL44cj4\nsJV702po5DQk/f+YOZ2sSDvOhl8aj3cPLkmfkYJd/1+x5XCAB2qoHntLlrzrBGET\nqDbucakNJGV8OEhFnvuAacRpFT4sP1pl7JZfB2w5AoGAN3wanFJMYA/8pn8ugC44\nTr//4SJAp8ANT/g5lz3hLDiZ8Q9mvYImSyNk3zuN5ozBBSlW7QK1BRouL1Ews9+8\nHgm0VGeK12OpXMP0SAcu8oltlbRoYGSjw0Y8bLWc+ySy95Gr4eiQ8f0Z/sF/ktK/\nuUSU5rPsCiC4eEy8JWvoWYk=\n-----END PRIVATE KEY-----\n",
-  "client_email": "cloudvideointelligenceapi@cloudquicklabs.iam.gserviceaccount.com",
-  "client_id": "104854439435499192917",
-  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
-  "token_uri": "https://oauth2.googleapis.com/token",
-  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
-  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/cloudvideointelligenceapi%40cloudquicklabs.iam.gserviceaccount.com",
-  "universe_domain": "googleapis.com"
+  
 }
