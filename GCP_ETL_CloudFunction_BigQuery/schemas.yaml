@@ -1,0 +1,185 @@
+- name: table_1
+  size: large
+  format: NEWLINE_DELIMITED_JSON
+  columns: []
+  schema: 
+    - name: "id"
+      type: "INT64"
+      mode: "NULLABLE"
+    - name: "first_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "last_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "dob"
+      type: "DATE"
+      mode: "NULLABLE"
+    - name: "addresses"
+      type: "RECORD"
+      mode: "REPEATED"
+      fields:
+        - name: "status"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "address"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "city"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "state"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "zip"
+          type: "INT64"
+          mode: "NULLABLE"
+        - name: "numberOfYears"
+          type: "INT64"
+          mode: "NULLABLE"
+
+- name: table_2
+  size: large
+  format: OUTER_ARRAY_JSON
+  columns: []
+  schema: 
+    - name: "id"
+      type: "INT64"
+      mode: "NULLABLE"
+    - name: "first_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "last_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "dob"
+      type: "DATE"
+      mode: "NULLABLE"
+    - name: "addresses"
+      type: "RECORD"
+      mode: "REPEATED"
+      fields:
+        - name: "status"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "address"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "city"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "state"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "zip"
+          type: "INT64"
+          mode: "NULLABLE"
+        - name: "numberOfYears"
+          type: "INT64"
+          mode: "NULLABLE"
+
+- name: table_3
+  size: large
+  format: SRC
+  columns: []
+  schema: 
+    - name: "src"
+      type: "STRING"
+      mode: "NULLABLE"
+
+- name: table_4
+  size: large
+  format: OBJECT_STRING
+  columns: []
+  schema: 
+    - name: "id"
+      type: "INT64"
+      mode: "NULLABLE"
+    - name: "first_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "last_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "dob"
+      type: "DATE"
+      mode: "NULLABLE"
+    - name: "addresses"
+      type: "RECORD"
+      mode: "REPEATED"
+      fields:
+        - name: "status"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "address"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "city"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "state"
+          type: "STRING"
+          mode: "NULLABLE"
+        - name: "zip"
+          type: "INT64"
+          mode: "NULLABLE"
+        - name: "numberOfYears"
+          type: "INT64"
+          mode: "NULLABLE"
+
+- name: table_5
+  size: large
+  format: DF
+  columns: []
+  schema: 
+    - name: "id"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "first_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "last_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "dob"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "addresses"
+      type: "STRING"
+      mode: "NULLABLE"
+
+- name: table_6
+  size: large
+  format: DF_NORMALIZED
+  columns: []
+  schema: 
+    - name: "id"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "first_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "last_name"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "dob"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "addresses_status"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "addresses_address"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "addresses_city"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "addresses_state"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "addresses_zip"
+      type: "STRING"
+      mode: "NULLABLE"
+    - name: "addresses_numberOfYears"
+      type: "STRING"
+      mode: "NULLABLE"
