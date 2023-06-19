@@ -1,0 +1,40 @@
+##################### Create AWS EKS clsuster ################################################################################
+## Create EKS cluster
+eksctl create cluster --name gcpanthosdemodemo --node-type t3.large --nodes 1 --nodes-min 1 --nodes-max 2 --region us-west-2 --zones=us-west-2a,us-west-2b
+
+## Get EKS Cluster service
+eksctl get cluster --name gcpanthosdemo --region us-west-2
+
+## Update Kubeconfig 
+aws eks update-kubeconfig --name gcpanthosdemo
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name gcpanthosdemo --region us-west-2
+
+##########################################################################################################################################
+
+1. AWS Context (Windows PowerShell)
+. aws configure
+. aws eks update-kubeconfig --name <Cluster_Name>
+. kubectl get nodes
+. $OIDC_URL=$(aws eks describe-cluster --name <Cluster_Name> --region <Cluster_Region> --query "cluster.identity.oidc.issuer" --output text)
+. $KUBE_CONFIG_CONTEXT=$(kubectl config current-context)
+. kubectl get pods -n gke-connect
+
+2.  GCP Context
+. gcloud auth login
+. gcloud config set project cloudquicklab
+. gcloud container hub memberships register gcpanthosdemo --context=$KUBE_CONFIG_CONTEXT --public-issuer-url=$OIDC_URL --kubeconfig="C:\Users\Rekhu Chinnarathod\.kube\config" --project=cloudquicklab --enable-workload-identity
+
+
+3.  Authentication AWS EKS in Anthos with Token
+. kubectl create serviceaccount -n kube-system anthos-admin
+. kubectl create clusterrolebinding anthos-admin-binding --clusterrole cluster-admin --serviceaccount kube-system:anthos-admin
+. $SECRET_NAME=$(kubectl get serviceaccount -n kube-system anthos-admin -o jsonpath='{$.secrets[0].name}')
+. $BASE64_ENCODED_TOKEN =  kubectl get secret -n kube-system $SECRET_NAME -o jsonpath='{$.data.token}'
+. Decode above token and use it
+
+##########################################################################################################################################
