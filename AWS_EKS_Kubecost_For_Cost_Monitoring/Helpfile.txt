@@ -1,0 +1,34 @@
+##################### Create AWS EKS clsuster ################################################################################
+## Create EKS cluster
+eksctl create cluster --name kubecostdemo --node-type t3.large --nodes 3 --nodes-min 2 --nodes-max 3 --region us-west-2 --zones=us-west-2a,us-west-2b --version=1.24
+
+## Get EKS Cluster service
+eksctl get cluster --name kubecostdemo --region us-west-2
+
+## Update Kubeconfig 
+aws eks update-kubeconfig --name kubecostdemo
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name kubecostdemo --region us-west-2
+
+################################### Install kubecost ######################################################################################
+1. eksctl utils associate-iam-oidc-provider --cluster kubecostdemo --approve
+
+2. eksctl create iamserviceaccount --name ebs-csi-controller-sa --namespace kube-system --cluster "kubecostdemo" --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy --approve --role-only --role-name AmazonEKS_EBS_CSI_DriverRole
+
+3. SERVICE_ACCOUNT_ROLE_ARN=$(aws iam get-role --role-name AmazonEKS_EBS_CSI_DriverRole --output json | jq -r '.Role.Arn')
+
+4. eksctl create addon --name aws-ebs-csi-driver --cluster "kubecostdemo" --service-account-role-arn "arn:aws:iam::357171621133:role/AmazonEKS_EBS_CSI_DriverRole" --force
+
+5. helm upgrade -i kubecost oci://public.ecr.aws/kubecost/cost-analyzer --version="1.104.4" --namespace kubecost --create-namespace -f https://raw.githubusercontent.com/kubecost/cost-analyzer-helm-chart/develop/cost-analyzer/values-eks-cost-monitoring.yaml --set prometheus.configmapReload.prometheus.enabled="false"
+
+6. kubectl get pods -n kubecost
+
+7. kubectl port-forward --namespace kubecost deployment/kubecost-cost-analyzer 9090
+
+8. http://localhost:9090
+
+##########################################################################################################################################
