@@ -1,0 +1,28 @@
+
+Creating the credentials:
+
+1) https://console.cloud.google.com/apis/credentials
+
+
+1. Obtaining the access token
+https://accounts.google.com/o/oauth2/auth?client_id=780198081668-1uf744osv25cre4sco7hg6fqtnbkm72m.apps.googleusercontent.com&redirect_uri=http://127.0.0.1&scope=profile&email&response_type=code&include_granted_scopes=true&access_type=offline&state=state_parameter_passthrough_value
+
+2. Code
+
+http://127.0.0.1/?state=state_parameter_passthrough_value&code=4%2F0AZEOvhXsWYDZDuVQqqmAeiupucqL_1_aa8C9qYc2iuK2U3LWX9Uu3ER6fgBP3JY4L7utDA&scope=profile+https%3A%2F%2Fwww.googleapis.com%2Fauth%2Fuserinfo.profile
+
+CODE = 4%2F0AZEOvhXsWYDZDuVQqqmAeiupucqL_1_aa8C9qYc2iuK2U3LWX9Uu3ER6fgBP3JY4L7utDA
+
+3. Requesting access token
+curl -X POST https://oauth2.googleapis.com/token \
+-d "code=<CODE>&client_id=<CLIENT-ID>&client_secret=<CLIENT-SECRET>&redirect_uri=<REDIRECT-URI>&access_type=offline&grant_type=authorization_code"
+
+
+curl -X POST https://oauth2.googleapis.com/token -d "code=4%2F0AZEOvhXsWYDZDuVQqqmAeiupucqL_1_aa8C9qYc2iuK2U3LWX9Uu3ER6fgBP3JY4L7utDA&client_id=780198081668-1uf744osv25cre4sco7hg6fqtnbkm72m.apps.googleusercontent.com&client_secret=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&redirect_uri=http://127.0.0.1&access_type=offline&grant_type=authorization_code"
+
+
+4. Refreshing Access token
+curl -X POST https://oauth2.googleapis.com/token \
+-d "access_type=offline&refresh_token=[ZZZZ]&client_id=<CLIENT-ID>&client_secret=<CLIENT-SECRET>&grant_type=refresh_token"
+
+

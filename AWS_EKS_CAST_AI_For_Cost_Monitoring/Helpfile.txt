@@ -1,0 +1,31 @@
+##################### Create AWS EKS clsuster ################################################################################
+## Create EKS cluster
+eksctl create cluster --name castaidemo --node-type t3.large --nodes 3 --nodes-min 2 --nodes-max 3 --region us-west-2 --zones=us-west-2a,us-west-2b --version=1.24
+
+## Get EKS Cluster service
+eksctl get cluster --name castaidemo --region us-west-2
+
+## Update Kubeconfig 
+aws eks update-kubeconfig --name castaidemo
+
+## Get EKS Pod data.
+kubectl get pods --all-namespaces
+
+## Delete EKS cluster
+eksctl delete cluster --name castaidemo --region us-west-2
+
+################################### Install kubectl ##############################################
+curl -o kubectl https://amazon-eks.s3.us-west-2.amazonaws.com/1.19.6/2021-01-05/bin/linux/amd64/kubectl
+chmod +x ./kubectl
+sudo mv kubectl /usr/local/bin/kubectl
+##################################################################################################
+
+########################## install helm ##########################################################
+
+sudo yum install openssl
+
+curl https://raw.githubusercontent.com/helm/helm/master/scripts/get-helm-3 > get_helm.sh
+chmod 700 get_helm.sh
+./get_helm.sh
+
+###################################################################################################
