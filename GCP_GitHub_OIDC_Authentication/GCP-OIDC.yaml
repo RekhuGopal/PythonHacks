@@ -1,0 +1,23 @@
+name: List services in GCP
+on:
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+
+jobs:
+  Get_OIDC_ID_token:
+    runs-on: ubuntu-latest
+    steps:
+    - id: 'auth'
+      name: 'Authenticate to GCP'
+      uses: 'google-github-actions/auth@v0.3.1'
+      with:
+          create_credentials_file: 'true'
+          workload_identity_provider: 'projects/823790742896/locations/global/workloadIdentityPools/my-pool/providers/my-provider'
+          service_account: 'cloudquicklab@appspot.gserviceaccount.com'
+    - id: 'gcloud'
+      name: 'gcloud'
+      run: |-
+        gcloud auth login --brief --cred-file="${{ steps.auth.outputs.credentials_file_path }}"
+        gcloud services list --project cloudquicklab
