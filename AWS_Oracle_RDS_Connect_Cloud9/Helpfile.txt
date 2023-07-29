@@ -1,0 +1,6 @@
+sqlplus oraadmin/Welcome123@(DESCRIPTION=(ADDRESS_LIST=(ADDRESS=(PROTOCOL=TCP)(HOST=mydatabase.cg6dyckc8xh5.us-west-2.rds.amazonaws.com)(PORT=1521)))(CONNECT_DATA=(SID=ORCL)))
+
+create table das(id number);
+insert into das values(1);
+select * from das;
+drop table das purge;
