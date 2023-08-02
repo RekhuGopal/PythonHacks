@@ -1,0 +1,29 @@
+exec rdsadmin.rdsadmin_util.create_directory(p_directory_name => 'MY_DUMP_DIR');
+
+select * from table(rdsadmin.rds_file_util.listdir(p_directory => 'MY_DUMP_DIR'));
+
+select rdsadmin.rdsadmin_s3_tasks.download_from_s3(p_bucket_name=> 'rds-oracle-to-s3-integration', p_directory_name => 'MY_DUMP_DIR') as TASK_ID from dual;
+
+select text from table(rdsadmin.rds_file_util.read_text_file('BDUMP', 'dbtask-1690978850387-27.log'));
+
+select * from table(rdsadmin.rds_file_util.listdir(p_directory=>'MY_DUMP_DIR'));
+
+
+create user hr identified by hr;
+grant create session, resource to hr;
+alter user hr quota 100M on users;
+
+
+DECLARE hdnl NUMBER; 
+      BEGIN 
+      hdnl := DBMS_DATAPUMP.OPEN( operation => 'IMPORT', job_mode => 'SCHEMA', job_name=>null); 
+      DBMS_DATAPUMP.ADD_FILE( handle => hdnl, filename => 'HR.dmp', directory => 'MY_DUMP_DIR', filetype => dbms_datapump.ku$_file_type_dump_file); 
+      DBMS_DATAPUMP.ADD_FILE( handle => hdnl, filename => 'HR_imp.log', directory => 'MY_DUMP_DIR', filetype => dbms_datapump.ku$_file_type_log_file); 
+      DBMS_DATAPUMP.METADATA_FILTER(hdnl,'SCHEMA_EXPR','IN (''HR'')'); DBMS_DATAPUMP.START_JOB(hdnl); END;
+      / 
+
+
+select table_name from dba_tables where owner = 'HR';
+select count(*) from hr.jobs;
+select first_name, last_name, job_id, salary from hr.employees where rownum <10;
+
