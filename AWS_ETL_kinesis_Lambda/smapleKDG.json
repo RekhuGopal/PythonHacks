@@ -1,0 +1,12 @@
+{
+    "sensorId": {{random.number(50)}},
+    "currentTemperature": {{random.number(
+        {
+            "min":10,
+            "max":150
+        }
+    )}},
+    "status": "{{random.arrayElement(
+        ["OK","FAIL","WARN"]
+    )}}"
+}
