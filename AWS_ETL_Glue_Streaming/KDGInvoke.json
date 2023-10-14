@@ -1,0 +1,16 @@
+{
+    "customerId": "{{random.number(50)}}",
+    "transactionAmount": {{random.number(
+        {
+            "min":10,
+            "max":150
+        }
+    )}},
+    "sourceIp" : "{{internet.ip}}",
+    "status": "{{random.weightedArrayElement({
+        "weights" : [0.8,0.1,0.1],
+        "data": ["OK","FAIL","PENDING"]
+        }        
+    )}}",
+   "transactionTime": "{{date.now}}"      
+}
