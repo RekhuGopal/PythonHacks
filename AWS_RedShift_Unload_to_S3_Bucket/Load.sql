@@ -1,0 +1,1 @@
+COPY dev.public.test FROM 's3://redshift-table-to-s3-bucket/order_data_part_1.csv' IAM_ROLE 'arn:aws:iam::357171621133:role/ETLlambdaAccessRole' FORMAT AS CSV DELIMITER ',' QUOTE '"' IGNOREHEADER 1 REGION AS 'us-west-2'
