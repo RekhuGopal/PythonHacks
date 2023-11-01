@@ -1,8 +1,8 @@
 from azure.communication.email import EmailClient
 from azure.core.credentials import AzureKeyCredential
 
-credential = AzureKeyCredential("ii/YlHlUasc+0RVWm7BCVHUQ5OBM5TWiOv7V0cfqIwTOM7PCV4IUa6GfR0+WnoqoV++F0HkbRYdFunp/34GPSA==")
-endpoint = "https://demo-acs-cloudquicklabs.unitedstates.communication.azure.com/"
+credential = AzureKeyCredential("<Azure Communication Service Key>")
+endpoint = "<Azure Communication Service Endpoint>"
 client = EmailClient(endpoint, credential)
 
 message = {
@@ -14,7 +14,7 @@ message = {
     "recipients": {
         "to": [
             {
-                "address": "vrchinnarathod@gmail.com",
+                "address": "sdfsgd@gmail.com",
                 "displayName": "Cloud Quick Labs"
             }
         ]
