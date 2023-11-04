@@ -1,0 +1,2 @@
+from os import environ
+environ["connection_string"] = "DefaultEndpointsProtocol=https;AccountName=cloudquickalbsdemo;AccountKey=CjTWgPce4PuV0kGteKTFnwT7szdO129u9d1AcvuFyW0erFsS8Nt0lcpRnYQGJSIogVUSV7mvNbkO+AStFar0Dg==;EndpointSuffix=core.windows.net"
