@@ -1,0 +1,13 @@
+
+Aurora MySQL US West (Oregon)	Version 3.05.0 and higher , Custom Parameter Group vlaues
+
+binlog_format=ROW
+binlog_backup=0
+binlog_replication_globaldb=0
+binlog_row_image=full
+binlog_row_metadata=full
+aurora_enhanced_binlog=1
+
+
+
+aws redshift-serverless update-workgroup --workgroup-name cloudquicklabswg --config-parameters parameterKey=enable_case_sensitive_identifier,parameterValue=true

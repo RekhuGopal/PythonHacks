@@ -1,0 +1,27 @@
+version: "2"
+dynamodb-pipeline:
+  source:
+    dynamodb:
+      acknowledgments: true
+      tables:
+        - table_arn: "arn:aws:dynamodb:us-west-2:357171621133:table/FaceRecords"
+          stream:
+            start_position: "LATEST"
+          export:
+            s3_bucket: "dyanmotoopensearchintegration"
+            s3_region: "us-west-2"
+            s3_prefix: "ddb-to-opensearch-export/"
+      aws:
+        sts_role_arn: "arn:aws:iam::357171621133:role/ETLlambdaAccessRole"
+        region: "us-west-2"
+  sink:
+    - opensearch:
+        hosts: [ "https://search-dynamotoopensearch-nv6e6vczm4krrfjvu3b7b3bn7i.aos.us-west-2.on.aws" ]
+        index: "users"
+        document_id: "${getMetadata(\"primary_key\")}"
+        basic_auth:
+          username: "admin"
+          password: "Test@1234"
+        aws:
+          sts_role_arn: "arn:aws:iam::357171621133:role/ETLlambdaAccessRole"
+          region: "us-west-2"
