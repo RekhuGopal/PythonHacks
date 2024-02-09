@@ -1,0 +1,5 @@
+1. A client error occured: generation_error
+sagemaker_inference.errors.BaseInferenceToolkitError: (400, 'generation_error', 'image dimensions must be multiples of 64, got 300x253')
+
+2. A client error occured: generation_error
+sagemaker_inference.errors.BaseInferenceToolkitError: (400, 'generation_error', 'image too large, 1590226>1048576 pixels')
