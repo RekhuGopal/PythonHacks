@@ -1,0 +1,98 @@
+[
+    {
+        "id": 0,
+        "name": "Daniel",
+        "city": "San Diego",
+        "age": 48
+    },
+    {
+        "id": 1,
+        "name": "Sarah",
+        "city": "Lahaina",
+        "age": 39
+    },
+    {
+        "id": 2,
+        "name": "Charlotte",
+        "city": "Honolulu",
+        "age": 49
+    },
+    {
+        "id": 3,
+        "name": "Noah",
+        "city": "St. Louis",
+        "age": 89
+    },
+    {
+        "id": 4,
+        "name": "Daniel",
+        "city": "San Diego",
+        "age": 87
+    },
+    {
+        "id": 5,
+        "name": "Amelia",
+        "city": "Portland",
+        "age": 57
+    },
+    {
+        "id": 6,
+        "name": "Levi",
+        "city": "Las Vegas",
+        "age": 23
+    },
+    {
+        "id": 7,
+        "name": "Noah",
+        "city": "Los Angeles",
+        "age": 76
+    },
+    {
+        "id": 8,
+        "name": "Isabella",
+        "city": "Honolulu",
+        "age": 25
+    },
+    {
+        "id": 9,
+        "name": "Leo",
+        "city": "Portland",
+        "age": 56
+    },
+    {
+        "id": 10,
+        "name": "Oliver",
+        "city": "Branson",
+        "age": 29
+    },
+    {
+        "id": 11,
+        "name": "Levi",
+        "city": "New York City",
+        "age": 25
+    },
+    {
+        "id": 12,
+        "name": "Joe",
+        "city": "New York City",
+        "age": 97
+    },
+    {
+        "id": 13,
+        "name": "Michael",
+        "city": "Austin",
+        "age": 95
+    },
+    {
+        "id": 14,
+        "name": "Charlotte",
+        "city": "Sedona",
+        "age": 72
+    },
+    {
+        "id": 15,
+        "name": "Emma",
+        "city": "Las Vegas",
+        "age": 52
+    }
+]
