@@ -1,0 +1,1 @@
+postgres://jdbc:postgresql://cloudquicklabs.cg6dyckc8xh5.us-west-2.rds.amazonaws.com:5432/test?user=postgres&password=Test#1234

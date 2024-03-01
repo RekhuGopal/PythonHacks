@@ -1,0 +1,8 @@
+1.  Kinesis Data Stream
+ Name :  TicketTransactionStreamingData
+ Mode :  Provisioned
+ Shard Count :  1
+
+ 2.  Data Catalog
+    Name :  tickettransactionstreamdata
+    Database Name :  tickettransactiondatabase
