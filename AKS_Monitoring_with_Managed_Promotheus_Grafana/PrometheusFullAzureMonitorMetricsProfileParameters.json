@@ -1,0 +1,36 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "azureMonitorWorkspaceResourceId": {
+        "value": "/subscriptions/063965e0-d141-48d4-b8bd-0dfdc0dc00ff/resourceGroups/cloudquicklabs/providers/microsoft.monitor/accounts/azmonitorworkspace"
+      },
+      "azureMonitorWorkspaceLocation": {
+        "value": "westeurope"
+      },
+      "clusterResourceId": {
+        "value": "/subscriptions/063965e0-d141-48d4-b8bd-0dfdc0dc00ff/resourcegroups/cloudquicklabs/providers/Microsoft.ContainerService/managedClusters/cloudquicklabsaks"
+      },
+      "clusterLocation": {
+        "value": "westeurope"
+      },
+      "metricLabelsAllowlist": {
+        "value": ""
+      },
+      "metricAnnotationsAllowList": {
+        "value": ""
+      },
+      "enableWindowsRecordingRules": {
+        "value": false
+      },
+      "grafanaResourceId": {
+        "value": "/subscriptions/063965e0-d141-48d4-b8bd-0dfdc0dc00ff/resourceGroups/cloudquicklabs/providers/Microsoft.Dashboard/grafana/cloudquicklabsgfana"
+      },
+      "grafanaLocation": {
+        "value": "westeurope"
+      },
+      "grafanaSku": {
+        "value": "Standard"
+      }
+    }
+  }
