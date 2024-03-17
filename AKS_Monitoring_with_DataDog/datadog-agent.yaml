@@ -1,0 +1,23 @@
+kind: DatadogAgent
+apiVersion: datadoghq.com/v2alpha1
+metadata:
+  name: datadog
+spec:
+  features:
+    admissionController:
+      enabled: true
+  global:
+    credentials:
+      apiKey: 394470902a015fab37d439e8fcfeb1bb
+    kubelet:
+      host:
+        fieldRef:
+          fieldPath: spec.nodeName
+      hostCAPath: /etc/kubernetes/certs/kubeletserver.crt
+  override:
+    clusterAgent:
+      containers:
+        cluster-agent:
+          env:
+            - name: DD_ADMISSION_CONTROLLER_ADD_AKS_SELECTORS
+              value: "true"
