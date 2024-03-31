@@ -1,0 +1,29 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: server-svc
+  namespace: server-svc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: server-svc
+  template:
+    metadata:
+      labels:
+        app: server-svc
+    spec:
+      serviceAccountName: server-svc
+      containers:
+        - name: server-svc
+          image: rekhugopal/eksmeshdemo:latest
+          imagePullPolicy: Always
+          ports:
+            - name: http
+              containerPort: 8080
+          startupProbe:
+            tcpSocket:
+              port: http
+            initialDelaySeconds: 20
+            periodSeconds: 5

@@ -1,0 +1,8 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: client-svc
+  namespace: client-svc
+  annotations:
+    eks.amazonaws.com/role-arn: arn:aws:iam::357171621133:role/devcql-cloudquicklabs-eks-client-svc
