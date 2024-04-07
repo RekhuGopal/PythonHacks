@@ -1,0 +1,22 @@
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: devwebapp
+  labels:
+    app: devwebapp
+  annotations:
+    vault.hashicorp.com/agent-inject: "true"
+    vault.hashicorp.com/agent-cache-enable: "true"
+    vault.hashicorp.com/role: "devweb-app"
+    vault.hashicorp.com/agent-inject-secret-database-connect.sh: "database/creds/readonly"
+    vault.hashicorp.com/agent-inject-template-database-connect.sh: |
+      {{- with secret "database/creds/readonly" -}}
+      mysql -h my-release-mysql.default.svc.cluster.local --user={{ .Data.username }} --password={{ .Data.password }} my_database
+
+      {{- end -}}
+spec:
+  serviceAccountName: internal-app
+  containers:
+    - name: devwebapp
+      image: jweissig/app:0.0.1
