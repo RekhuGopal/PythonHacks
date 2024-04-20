@@ -1,20 +1,18 @@
 apiVersion: eksctl.io/v1alpha5
 kind: ClusterConfig
-
 metadata:
   name: karpenter-demo
   region: us-west-2
-
 iam:
-  withOIDC: true   
+  withOIDC: true
   serviceAccounts:
     - metadata:
         name: aws-load-balancer
         namespace: kube-system
       wellKnownPolicies:
-        awsLoadBalancerController: true  
+        awsLoadBalancerController: true
 managedNodeGroups:
   - name: demo-ng
     instanceType: t2.xlarge
-    minSize: 1
-    maxSize: 2
+    minSize: 2
+    maxSize: 4
