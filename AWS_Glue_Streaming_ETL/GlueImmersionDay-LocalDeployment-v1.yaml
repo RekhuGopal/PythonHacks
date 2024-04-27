@@ -1,0 +1,945 @@
+AWSTemplateFormatVersion: 2010-09-09
+Resources:
+  WorkshopVPC:
+    Type: 'AWS::EC2::VPC'
+    Properties:
+      CidrBlock: 10.2.0.0/16
+      EnableDnsHostnames: 'true'
+      EnableDnsSupport: 'true'
+      Tags:
+        - Key: Name
+          Value: 'glueworkshop'
+  InternetGateway:
+    Type: 'AWS::EC2::InternetGateway'
+    Properties:
+      Tags:
+        - Key: Application
+          Value: !Ref 'AWS::StackId'
+        - Key: Name
+          Value: 'glueworkshop-igw'
+  AttachGateway:
+    Type: 'AWS::EC2::VPCGatewayAttachment'
+    Properties:
+      InternetGatewayId: !Ref InternetGateway
+      VpcId: !Ref WorkshopVPC
+    DependsOn: [InternetGateway, WorkshopVPC]
+  WorkshopSubnet1:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select
+        - '0'
+        - !GetAZs ''
+      CidrBlock: 10.2.0.0/26
+      VpcId: !Ref WorkshopVPC
+      Tags:
+        - Key: Name
+          Value: 'glueworkshop-subnet1'
+    DependsOn: WorkshopVPC
+  WorkshopSubnet2:
+    Type: 'AWS::EC2::Subnet'
+    Properties:
+      AvailabilityZone: !Select
+        - '1'
+        - !GetAZs ''
+      CidrBlock: 10.2.0.128/26
+      VpcId: !Ref WorkshopVPC
+      Tags:
+        - Key: Name
+          Value: 'glueworkshop-subnet2'
+    DependsOn: WorkshopVPC
+  MyDBSubnetGroup:
+    Type: 'AWS::RDS::DBSubnetGroup'
+    Properties:
+      DBSubnetGroupDescription: Subnet available for the DB Instance
+      SubnetIds:
+        - !Ref WorkshopSubnet1
+        - !Ref WorkshopSubnet2
+    DependsOn: [WorkshopSubnet1, WorkshopSubnet2]
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      AvailabilityZone: !Select [ 0, !GetAZs '' ]
+      CidrBlock: 10.2.10.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: MWAAEnvironment Public Subnet (AZ1)
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: 10.2.11.0/24
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: MWAAEnvironment Public Subnet (AZ2)
+
+  PrivateSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      AvailabilityZone: !Select [ 0, !GetAZs  '' ]
+      CidrBlock: 10.2.20.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: MWAAEnvironment Private Subnet (AZ1)
+
+  PrivateSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      AvailabilityZone: !Select [ 1, !GetAZs  '' ]
+      CidrBlock: 10.2.21.0/24
+      MapPublicIpOnLaunch: false
+      Tags:
+        - Key: Name
+          Value: MWAAEnvironment Private Subnet (AZ2)          
+
+  NatGateway1EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: AttachGateway
+    Properties:
+      Domain: vpc
+
+  NatGateway2EIP:
+    Type: AWS::EC2::EIP
+    DependsOn: AttachGateway
+    Properties:
+      Domain: vpc
+
+  NatGateway1:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway1EIP.AllocationId
+      SubnetId: !Ref PublicSubnet1
+
+  NatGateway2:
+    Type: AWS::EC2::NatGateway
+    Properties:
+      AllocationId: !GetAtt NatGateway2EIP.AllocationId
+      SubnetId: !Ref PublicSubnet2
+  
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      Tags:
+        - Key: Name
+          Value: MWAAEnvironment Public Routes
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet1
+
+  PublicSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      SubnetId: !Ref PublicSubnet2
+
+  PrivateRouteTable1:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref WorkshopVPC
+        Tags:
+          - Key: Name
+            Value: MWAAEnvironment Private Routes (AZ1)
+
+  DefaultPrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway1
+
+  PrivateSubnet1RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable1
+      SubnetId: !Ref PrivateSubnet1
+
+  PrivateRouteTable2:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref WorkshopVPC
+      Tags:
+        - Key: Name
+          Value: MWAAEnvironment Private Routes (AZ2)
+
+  DefaultPrivateRoute2:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NatGateway2
+
+  PrivateSubnet2RouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable2
+      SubnetId: !Ref PrivateSubnet2
+
+  MWAAIAMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: MWAAIAMRole
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - airflow-env.amazonaws.com
+                - airflow.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3FullAccess
+        - arn:aws:iam::aws:policy/AWSGlueConsoleFullAccess
+
+  MWAAExecutionPolicy:
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: MWAAExecutionPolicy
+      Roles:
+        - !Ref MWAAIAMRole  # Specify the IAM role to attach this policy to      
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Action: airflow:PublishMetrics
+            Resource: !Sub arn:aws:airflow:${AWS::Region}:${AWS::AccountId}:environment/MyAirflowEnvironment
+          - Effect: Deny
+            Action: s3:ListAllMyBuckets
+            Resource:
+              - !Sub arn:aws:s3:::glueworkshop-${AWS::AccountId}-${AWS::Region}
+              - !Sub arn:aws:s3:::glueworkshop-${AWS::AccountId}-${AWS::Region}/*
+          - Effect: Allow
+            Action:
+              - s3:GetObject*
+              - s3:GetBucket*
+              - s3:List*
+            Resource:
+              - !Sub arn:aws:s3:::glueworkshop-${AWS::AccountId}-${AWS::Region}
+              - !Sub arn:aws:s3:::glueworkshop-${AWS::AccountId}-${AWS::Region}/*
+          - Effect: Allow
+            Action:
+              - logs:CreateLogStream
+              - logs:CreateLogGroup
+              - logs:PutLogEvents
+              - logs:GetLogEvents
+              - logs:GetLogRecord
+              - logs:GetLogGroupFields
+              - logs:GetQueryResults
+            Resource:
+              - !Sub arn:aws:logs:${AWS::Region}:${AWS::AccountId}:log-group:airflow-MyAirflowEnvironment-*
+          - Effect: Allow
+            Action:
+              - logs:DescribeLogGroups
+            Resource:
+              - '*'
+          - Effect: Allow
+            Action: cloudwatch:PutMetricData
+            Resource: '*'
+          - Effect: Allow
+            Action:
+              - sqs:ChangeMessageVisibility
+              - sqs:DeleteMessage
+              - sqs:GetQueueAttributes
+              - sqs:GetQueueUrl
+              - sqs:ReceiveMessage
+              - sqs:SendMessage
+            Resource: !Sub arn:aws:sqs:${AWS::Region}:*:airflow-celery-*
+          - Effect: Allow
+            Action:
+              - kms:Decrypt
+              - kms:DescribeKey
+              - kms:GenerateDataKey*
+              - kms:Encrypt
+            NotResource: !Sub arn:aws:kms:*:${AWS::AccountId}:key/*
+            Condition:
+              StringLike:
+                kms:ViaService:
+                  - !Sub sqs.${AWS::Region}.amazonaws.com      
+
+  Route1:
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0 
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTable1
+    DependsOn: [InternetGateway, RouteTable1]
+
+  RouteTable1:
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: 'glueworkshop-routetable'
+      VpcId: !Ref WorkshopVPC
+    DependsOn: WorkshopVPC
+  SubnetRouteTableAssociation1:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref RouteTable1
+      SubnetId: !Ref WorkshopSubnet1
+    DependsOn: [WorkshopSubnet1, RouteTable1]
+
+  Route2:     #For this Route, the s3 endpoint won't be added!!!
+    Type: 'AWS::EC2::Route'
+    Properties:
+      DestinationCidrBlock: 0.0.0.0/0 
+      GatewayId: !Ref InternetGateway
+      RouteTableId: !Ref RouteTable2
+    DependsOn: [InternetGateway, RouteTable2]
+
+  RouteTable2: #For this Route Table S3 endpoint won't be added!!!
+    Type: 'AWS::EC2::RouteTable'
+    Properties:
+      Tags:
+        - Key: Name
+          Value: 'glueworkshop-routetable-cloud9'
+      VpcId: !Ref WorkshopVPC
+    DependsOn: WorkshopVPC
+  SubnetRouteTableAssociation2:
+    Type: 'AWS::EC2::SubnetRouteTableAssociation'
+    Properties:
+      RouteTableId: !Ref RouteTable2
+      SubnetId: !Ref WorkshopSubnet2
+    DependsOn: [WorkshopSubnet2, RouteTable2]
+
+  S3Endpoint:
+    Type: 'AWS::EC2::VPCEndpoint'
+    Properties:
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: '*'
+            Resource: '*'
+      ServiceName: !Sub 'com.amazonaws.${AWS::Region}.s3'
+      RouteTableIds: [!Ref RouteTable1]
+      VpcEndpointType: Gateway
+      VpcId: !Ref WorkshopVPC
+    DependsOn: [WorkshopVPC, RouteTable1] #Added only to Route1/RouteTable1
+
+  DefaultVPCSecurityGroup:
+    Type: 'AWS::EC2::SecurityGroup'
+    Properties:
+      GroupDescription: Default Security Group for the VPC and .
+      VpcId: !Ref WorkshopVPC
+      Tags:
+        - Key: Name
+          Value: 'glueworkshop-sg'
+    DependsOn: WorkshopVPC
+  DefaultVPCSecurityGroupSelfRefIngress:
+    Type: 'AWS::EC2::SecurityGroupIngress'
+    Properties:
+      SourceSecurityGroupId: !Ref DefaultVPCSecurityGroup
+      IpProtocol: '-1'
+      GroupId: !Ref DefaultVPCSecurityGroup
+    DependsOn: DefaultVPCSecurityGroup
+
+  GlueVpcEndpoint:
+    Type: AWS::EC2::VPCEndpoint
+    Properties:
+      ServiceName: !Join
+        - ''
+        - - com.amazonaws.
+          - !Ref 'AWS::Region'
+          - .glue
+      SubnetIds:
+        - !Ref WorkshopSubnet1
+        - !Ref WorkshopSubnet2
+      VpcId: !Ref WorkshopVPC
+      VpcEndpointType: Interface
+      SecurityGroupIds:
+        - !Ref DefaultVPCSecurityGroup
+      PrivateDnsEnabled: true
+    DependsOn: [WorkshopVPC, WorkshopSubnet1, WorkshopSubnet2, DefaultVPCSecurityGroup]
+
+
+  MySQLDB:
+    Type: 'AWS::RDS::DBInstance'
+    Properties:
+      DBInstanceIdentifier: glueworkshop
+      DBName: glueworkshop
+      DBInstanceClass: db.t3.medium
+      AllocatedStorage: '100'
+      AvailabilityZone: !GetAtt
+        - WorkshopSubnet1
+        - AvailabilityZone
+      DBSubnetGroupName: !Ref MyDBSubnetGroup
+      Engine: MySQL
+      EngineVersion: 8.0.32
+      MasterUsername: glueworkshop
+      MasterUserPassword: ImmersionsDay
+      MultiAZ: 'false'
+      PubliclyAccessible: 'false'
+      VPCSecurityGroups:
+        - !Ref DefaultVPCSecurityGroup
+    DependsOn: [DefaultVPCSecurityGroup, MyDBSubnetGroup, WorkshopSubnet1]
+  S3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub 'glueworkshop-${AWS::AccountId}-${AWS::Region}'
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: True
+        BlockPublicPolicy: True
+        IgnorePublicAcls: True
+        RestrictPublicBuckets: True
+      NotificationConfiguration:
+        QueueConfigurations:
+          - Event: 's3:ObjectCreated:*'
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: input/lab1/eventnotification/
+            Queue: !GetAtt Lab1EventQueue.Arn
+    DependsOn: Lab1EventQueue
+  S3BucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action:
+              - s3:GetBucketAcl
+            Resource: !Sub arn:aws:s3:::${S3Bucket}
+          - Effect: Allow
+            Principal:
+              Service: cloudtrail.amazonaws.com
+            Action:
+              - s3:PutObject
+            Resource: !Sub arn:aws:s3:::${S3Bucket}/cloudtrail/*
+            Condition:
+              StringEquals:
+                s3:x-amz-acl: bucket-owner-full-control
+  Trail:
+    Type: AWS::CloudTrail::Trail
+    Properties:
+      TrailName: 'glueworkshop-trail'
+      IsLogging: True
+      S3BucketName: !Ref S3Bucket
+      S3KeyPrefix: cloudtrail
+      EventSelectors:
+        - DataResources:
+            - Type: AWS::S3::Object
+              Values:
+              - !Sub arn:aws:s3:::${S3Bucket}/input/lab8/eventdriven/
+          IncludeManagementEvents: False
+          ReadWriteType: WriteOnly
+    DependsOn:
+      - S3Bucket
+      - S3BucketPolicy
+  AWSGlueServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: AWSGlueServiceRole-glueworkshop
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: glue.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'
+        - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonKinesisFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSNSFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'
+      Policies:
+        - PolicyName: passRole-glue
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 'iam:PassRole'
+                Resource: "*"
+        - PolicyName: glue-workshop-codewhisperer
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 
+                  - 'codewhisperer:GenerateRecommendations'
+                Resource: "*"
+  AWSGlueDataBrewServiceRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: AWSGlueDataBrewServiceRole-glueworkshop
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: databrew.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/service-role/AWSGlueDataBrewServiceRole'
+  AWSEventBridgeInvokeGlueRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: AWSEventBridgeInvokeRole-glueworkshop
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: events.amazonaws.com
+            Action: 'sts:AssumeRole'
+      Policies:
+        - PolicyName: EventBridgeInvokeGlue
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 'glue:notifyEvent'
+                Resource: "*"
+        - PolicyName: EventBridgeInvokeStepFunction
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: 'states:StartExecution'
+                Resource: "*"
+  AWSStepFunctionRole:
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: AWSStepFunctionRole-glueworkshop
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'
+        - 'arn:aws:iam::aws:policy/CloudWatchLogsFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSNSFullAccess'
+  AWSEC2ServiceRole:  ###NEED TO CHECK WHICH ROLES ARE REALLY REQUIRED. TRY TO LIMIT AS MUCH AS POSSIBLE!!!
+    Type: 'AWS::IAM::Role'
+    Properties:
+      RoleName: AWSEC2ServiceRole-etl-ttt-demo
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ec2.amazonaws.com
+            Action: 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/service-role/AWSGlueServiceRole'
+        - 'arn:aws:iam::aws:policy/AmazonDynamoDBFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonKinesisFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSNSFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonSQSFullAccess'
+        - 'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonEC2FullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonEventBridgeFullAccess'
+        - 'arn:aws:iam::aws:policy/IAMFullAccess'
+      Policies:
+        - PolicyName: FurtherRequiredInlinePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - lambda:*
+                  - codecommit:*
+                  - codebuild:*
+                  - codepipeline:*
+                  - codedeploy:*
+                  - airflow:*
+                Resource:
+                  - !Sub arn:aws:codecommit:*:${AWS::AccountId}:*
+                  - !Sub arn:aws:codebuild:*:${AWS::AccountId}:*
+                  - !Sub arn:aws:codepipeline:*:${AWS::AccountId}:*
+                  - !Sub arn:aws:codedeploy:*:${AWS::AccountId}:*
+                  - !Sub arn:aws:lambda:*:${AWS::AccountId}:function:*
+                  - !Sub arn:aws:airflow:*:${AWS::AccountId}:*
+              - Effect: Allow
+                Action:
+                  - codecommit:ListRepositories
+                  - databrew:*
+                  - states:*
+                Resource: "*"
+  AWSEC2InstanceProfileGlueWorkshop:
+    Type: 'AWS::IAM::InstanceProfile'
+    Properties:
+      InstanceProfileName: AWSEC2InstanceProfile-GlueWorkshop
+      Path: /
+      Roles:
+        - !Ref AWSEC2ServiceRole
+  Lab1EventQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      QueueName: 'glueworkshop-lab1-event-queue'
+  Lab1EventQueuePolicy:
+    Type: AWS::SQS::QueuePolicy
+    Properties:
+      PolicyDocument:
+        Id: glueworkshop-lab1-event-queue-policy
+        Version: '2012-10-17'
+        Statement:
+          - Sid: S3Permission
+            Effect: Allow
+            Principal:
+              Service: s3.amazonaws.com
+            Action:
+              - SQS:SendMessage
+            Resource: !GetAtt Lab1EventQueue.Arn
+      Queues:
+        - !Ref Lab1EventQueue
+    DependsOn: Lab1EventQueue
+  KinesisStream:
+    Type: AWS::Kinesis::Stream
+    Properties:
+        Name: glueworkshop
+        RetentionPeriodHours: 24
+        ShardCount: 2
+  GlueCatalogDatabase:
+    Type: AWS::Glue::Database
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseInput:
+        Name: glueworkshop_cloudformation
+        Description: Database create by Cloudformation for glue workshop
+  JsonStreamingTable:
+    Type: AWS::Glue::Table
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref GlueCatalogDatabase
+      TableInput:
+        Name: json-streaming-table
+        Description: Define schema for streaming json
+        TableType: EXTERNAL_TABLE
+        Parameters: { "classification": "json" }
+        StorageDescriptor:
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          Columns:
+          - Name: "uuid"
+            Type: string
+          - Name: "country"
+            Type: string
+          - Name: "itemtype"
+            Type: string
+          - Name: "saleschannel"
+            Type: string
+          - Name: "orderpriority"
+            Type: string
+          - Name: "orderdate"
+            Type: string
+          - Name: "region"
+            Type: string
+          - Name: "shipdate"
+            Type: string
+          - Name: "unitssold"
+            Type: string
+          - Name: "unitprice"
+            Type: string
+          - Name: "unitcost"
+            Type: string
+          - Name: "totalrevenue"
+            Type: string
+          - Name: "totalcost"
+            Type: string
+          - Name: "totalprofit"
+            Type: string
+          Parameters: {"endpointUrl": !Sub "https://kinesis.${AWS::Region}.amazonaws.com", "streamName": "glueworkshop", "typeOfData": "kinesis"}
+          SerdeInfo:
+            Parameters: {"paths": "Country,ItemType,OrderDate,OrderPriority,Region,SalesChannel,ShipDate,TotalCost,TotalProfit,TotalRevenue,UnitCost,UnitPrice,UnitsSold,uuid"}
+            SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
+    DependsOn: [GlueCatalogDatabase, KinesisStream]
+  JsonStaticTable:
+    DependsOn: GlueCatalogDatabase
+    Type: AWS::Glue::Table
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      DatabaseName: !Ref GlueCatalogDatabase
+      TableInput:
+        Name: json-static-table
+        Description: Define schema for static json
+        TableType: EXTERNAL_TABLE
+        Parameters: { "classification": "json" }
+        StorageDescriptor:
+          OutputFormat: org.apache.hadoop.hive.ql.io.HiveIgnoreKeyTextOutputFormat
+          InputFormat: org.apache.hadoop.mapred.TextInputFormat
+          Columns:
+          - Name: "uuid"
+            Type: string
+          - Name: "country"
+            Type: string
+          - Name: "itemtype"
+            Type: string
+          - Name: "saleschannel"
+            Type: string
+          - Name: "orderpriority"
+            Type: string
+          - Name: "orderdate"
+            Type: string
+          - Name: "region"
+            Type: string
+          - Name: "shipdate"
+            Type: string
+          - Name: "unitssold"
+            Type: string
+          - Name: "unitprice"
+            Type: string
+          - Name: "unitcost"
+            Type: string
+          - Name: "totalrevenue"
+            Type: string
+          - Name: "totalcost"
+            Type: string
+          - Name: "totalprofit"
+            Type: string
+          Location: !Sub 's3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/input/lab4/json/'
+          SerdeInfo:
+            Parameters: {"paths": "Country,ItemType,OrderDate,OrderPriority,Region,SalesChannel,ShipDate,TotalCost,TotalProfit,TotalRevenue,UnitCost,UnitPrice,UnitsSold,uuid"}
+            SerializationLibrary: org.openx.data.jsonserde.JsonSerDe
+  Cloud9IDE:
+    Type: AWS::Cloud9::EnvironmentEC2
+    Properties:
+      AutomaticStopTimeMinutes: 4320
+      ConnectionType: CONNECT_SSH
+      Description: 'Cloud9 environment created for Glue workshop'
+      ImageId: amazonlinux-2-x86_64
+      InstanceType: m5.large
+      Name: glueworkshop
+      SubnetId: !Ref WorkshopSubnet2
+  #    OwnerArn: !Sub 'arn:aws:sts::${AWS::AccountId}:assumed-role/WSParticipantRole/Participant'
+  Lab5GlueRdsConnection:
+    Type: 'AWS::Glue::Connection'
+    Properties:
+      CatalogId: !Ref AWS::AccountId
+      ConnectionInput:
+        ConnectionProperties:
+          Name: lab5-rds-connection
+          Type: JDBC
+          JDBC_CONNECTION_URL: !Join
+            - ''
+            - - 'jdbc:mysql://'
+              - !GetAtt
+                - MySQLDB
+                - Endpoint.Address
+              - ':'
+              - !GetAtt
+                - MySQLDB
+                - Endpoint.Port
+              - '/glueworkshop'
+          USERNAME: "glueworkshop"
+          PASSWORD: "ImmersionsDay"
+        ConnectionType: JDBC
+        Description: >-
+          MySQL connection to Sample DB
+        Name: 'lab5-rds-connection'
+        PhysicalConnectionRequirements:
+          AvailabilityZone: !GetAtt
+          - WorkshopSubnet1 #HAS TO BE SUBNET1 WHICH HAS S3 ENDPOINT IN ITS ROUTE!!!
+          - AvailabilityZone
+          SecurityGroupIdList:
+            - !Ref DefaultVPCSecurityGroup
+          SubnetId: !Ref WorkshopSubnet1
+    DependsOn: [MySQLDB]
+  Lab5GlueCrawlerRdsTable:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: 'lab5-rds-crawler'
+      Role: !GetAtt AWSGlueServiceRole.Arn
+      Description: AWS Glue crawler to crawl RDS table
+      DatabaseName: !Ref GlueCatalogDatabase
+      Targets:
+        JdbcTargets:
+          - ConnectionName: !Ref Lab5GlueRdsConnection
+            Path: 'glueworkshop/%'
+      TablePrefix: 'lab5_rds_'
+      Configuration: "{\"Version\":1.0,\"CrawlerOutput\":{\"Partitions\":{\"AddOrUpdateBehavior\":\"InheritFromTable\"},\"Tables\":{\"AddOrUpdateBehavior\":\"MergeNewColumns\"}}}"
+  MLCrawlerSample:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: ml-sample-cust-crawler
+      Role: !GetAtt AWSGlueServiceRole.Arn
+      DatabaseName: !Ref GlueCatalogDatabase
+      TablePrefix: ml_
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://glueworkshop-${AWS::AccountId}-${AWS::Region}/ml-lab/customer_sampling/"
+    DependsOn: S3Bucket
+  MLCrawlerBootstrap:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: ml-bootstrap-crawler
+      Role: !GetAtt AWSGlueServiceRole.Arn
+      DatabaseName: !Ref GlueCatalogDatabase
+      TablePrefix: ml_to_dedup_
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://glueworkshop-${AWS::AccountId}-${AWS::Region}/ml-lab/top-customer/"
+    DependsOn:  S3Bucket
+  Lab8MockJobDataProcess:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub "s3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/script/lab8/covid-case-count-data-extract.py"
+      MaxRetries: 0
+      Name: lab8-covid-case-count-data-extract
+      GlueVersion: 3.0
+      Role: !Ref AWSGlueServiceRole
+  Lab8MockJobDataExtract:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub "s3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/script/lab8/covid-case-count-data-process.py"
+      MaxRetries: 0
+      Name: lab8-covid-case-count-data-process
+      GlueVersion: 3.0
+      Role: !Ref AWSGlueServiceRole
+  Lab8MockJobVaccineExtract:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub "s3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/script/lab8/vaccine-count-data-extract.py"
+      MaxRetries: 0
+      Name: lab8-vaccine-count-data-extract
+      GlueVersion: 3.0
+      Role: !Ref AWSGlueServiceRole
+  Lab8MockJobError:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub "s3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/script/lab8/raise-error-job.py"
+      MaxRetries: 0
+      Name: lab8-raise-error
+      GlueVersion: 3.0
+      Role: !Ref AWSGlueServiceRole
+  Lab8MockJobVaccineProcess:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub "s3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/script/lab8/vaccine-count-data-process.py"
+      MaxRetries: 0
+      Name: lab8-vaccine-count-data-process
+      GlueVersion: 3.0
+      Role: !Ref AWSGlueServiceRole
+  MockJobClickstreamProcess:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub "s3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/script/lab7/glueworkshop-lab7-clickstream-transform.py"
+      Name: lab7-clickstream-data-transform
+      Role: !Ref AWSGlueServiceRole
+      MaxRetries: 0
+      Timeout: 2880
+      GlueVersion: 3.0
+      MaxCapacity: 50
+      DefaultArguments:
+                --TempDir: !Sub "s3://glueworkshop-${AWS::AccountId}-${AWS::Region}/temporary/"
+                --class: "GlueApp"
+                --enable-auto-scaling: "true"
+                --enable-continuous-cloudwatch-log: "true"
+                --enable-glue-datacatalog: "true"
+                --enable-job-insights: "true"
+                --enable-metrics: "true"
+                --enable-spark-ui: "true"
+                --job-bookmark-option: "job-bookmark-disable"
+                --job-language: "python"
+                --spark-event-logs-path: !Sub "s3://glueworkshop-${AWS::AccountId}-${AWS::Region}/sparkHistoryLogs/"
+                --workshop_bucket: !Sub "glueworkshop-${AWS::AccountId}-${AWS::Region}"
+  Lab7MockJobError:
+    Type: AWS::Glue::Job
+    Properties:
+      Command:
+        Name: glueetl
+        ScriptLocation: !Sub "s3://bucket_that_does_not_exist/missing_script.py"
+      MaxRetries: 0
+      Name: lab7-job-failure
+      GlueVersion: 3.0
+      Role: !Ref AWSGlueServiceRole
+  Lab8MockCaseCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: lab8-covid-case-count-processed-crawler
+      Role: !GetAtt AWSGlueServiceRole.Arn
+      DatabaseName: !Ref GlueCatalogDatabase
+      TablePrefix: lab8-case-processed-
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/input/lab1/csv/"
+  Lab8MockVaccineCrawler:
+    Type: AWS::Glue::Crawler
+    Properties:
+      Name: lab8-vaccine-case-count-processed-crawler
+      Role: !GetAtt AWSGlueServiceRole.Arn
+      DatabaseName: !Ref GlueCatalogDatabase
+      TablePrefix: lab8-vaccine-processed-
+      Targets:
+        S3Targets:
+          - Path: !Sub "s3://ee-assets-prod-${AWS::Region}/modules/aa287fde7dd448ffac85ed7824e5c1f0/v8/input/lab1/csv/"
+  Lab8SNSTopicSuccess:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: lab8-sns-success-notification
+  Lab8SNSTopicFailure:
+    Type: AWS::SNS::Topic
+    Properties:
+      TopicName: lab8-sns-failure-notification
+Outputs:
+  MySQLJDBCConnectionString:
+    Description: JDBC connection string for MySQL database
+    Value: !Join
+      - ''
+      - - 'jdbc:mysql://'
+        - !GetAtt
+          - MySQLDB
+          - Endpoint.Address
+        - ':'
+        - !GetAtt
+          - MySQLDB
+          - Endpoint.Port
+        - '/glueworkshop'
+  MySQLEndpoint:
+    Description: RDS endpoint for MySQL database
+    Value: !GetAtt MySQLDB.Endpoint.Address
+  S3BucketName:
+    Description: This is the bucket created as part of this workshop!
+    Value: !Ref S3Bucket
+  AWSRegion:
+    Description: This is the current AWS Region for this workshop!
+    Value: !Sub ${AWS::Region}
+  AWSAccount:
+    Description: This is the current AWS Account for this workshop!
+    Value: !Sub ${AWS::AccountId}
