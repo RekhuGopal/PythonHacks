@@ -28,3 +28,18 @@ def binary_search(listToSearch, NumberTofind):
 
 print(binary_search(a , 17))
         
+def recursion_bunarySearch (listToSearch, NumberTofind, li ,ri):
+    if li > ri:
+        return -1
+    mi = (li +ri) // 2
+    mn = listToSearch[mi]
+    if NumberTofind == listToSearch[mi]:
+        return mi
+    
+    if mn < NumberTofind:
+        li = mi + 1
+    else:
+        ri =  mi - 1
+    return recursion_bunarySearch (listToSearch, NumberTofind, li ,ri)
+
+print(binary_search(a , 17))
