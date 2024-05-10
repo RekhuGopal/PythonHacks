@@ -1,0 +1,10 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: inflate-pdb
+  namespace: workshop
+spec:
+  minAvailable: 4
+  selector:
+    matchLabels:
+      app: inflate      
