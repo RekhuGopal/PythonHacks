@@ -1,0 +1,57 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: mysql-gp2
+provisioner: ebs.csi.aws.com
+volumeBindingMode: WaitForFirstConsumer
+allowedTopologies:
+- matchLabelExpressions:
+  - key: topology.ebs.csi.aws.com/zone
+    values: ["us-west-2a","us-west-2b"]
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: ebs-claim
+  namespace: workshop
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: mysql-gp2
+  resources:
+    requests:
+      storage: 4Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inflate
+  namespace: workshop
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: inflate
+  template:
+    metadata:
+      labels:
+        app: inflate
+    spec:
+      terminationGracePeriodSeconds: 0
+      containers:
+      - name: app
+        image: centos
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do echo hello workshop users! Nice to meet you for $(( $RANDOM % 1000 + 1 )) time!>> /data/out.txt; sleep 200; done"]
+        volumeMounts:
+        - name: persistent-storage
+          mountPath: /data
+        resources:
+          requests:
+            cpu: 1
+      volumes:
+      - name: persistent-storage
+        persistentVolumeClaim:
+          claimName: ebs-claim
+      nodeSelector:
+        eks-immersion-team: my-team

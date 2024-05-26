@@ -1,0 +1,131 @@
+###################### EKS Create Cluster ##########################################################
+eksctl create cluster -f cluster.yaml
+aws eks describe-cluster --name karpenter-demo
+aws eks update-kubeconfig --name karpenter-demo
+#####################################################################################################
+
+####################### installing Karpenter in AWS EKS #############################################
+1.Set env variables
+
+$CLUSTER_NAME="karpenter-demo"
+$AWS_REGION="us-west-2"
+$AWS_ACCOUNT_ID="357171621133"
+$CLUSTER_ENDPOINT="https://889B1933F5B4A7E3AE5692BE4657A9AB.gr7.us-west-2.eks.amazonaws.com"
+$AZ1="$AWS_REGION"+"a"
+$AZ2="$AWS_REGION"+"b"
+
+2. Create the IAM Role and Instance profile for Karpenter Nodes
+
+aws cloudformation deploy `
+  --stack-name "Karpenter-$CLUSTER_NAME" `
+  --template-file "./cloudformation.yaml" `
+  --capabilities CAPABILITY_NAMED_IAM `
+  --parameter-overrides "ClusterName=$CLUSTER_NAME"
+
+3. Add the Karpenter node role to the aws-auth configmap
+
+eksctl create iamidentitymapping `
+  --username 'system:node:{{EC2PrivateDNSName}}' `
+  --cluster "karpenter-demo" `
+  --arn "arn:aws:iam::357171621133:role/KarpenterNodeRole-karpenter-demo" `
+  --group system:bootstrappers `
+  --group system:nodes
+
+kubectl describe configmap -n kube-system aws-auth
+
+4. Create KarpenterController IAM Role
+eksctl utils associate-iam-oidc-provider --cluster $CLUSTER_NAME --approve
+
+eksctl create iamserviceaccount `
+  --cluster "$CLUSTER_NAME" --name karpenter --namespace karpenter `
+  --role-name "$CLUSTER_NAME-karpenter" `
+  --attach-policy-arn "arn:aws:iam::357171621133:policy/KarpenterControllerPolicy-karpenter-demo" `
+  --role-only `
+  --approve
+
+$KARPENTER_IAM_ROLE_ARN="arn:aws:iam::357171621133:role/$CLUSTER_NAME-karpenter"
+
+eksctl get iamserviceaccount --cluster $CLUSTER_NAME --namespace karpenter
+
+5. Create the EC2 Spot Service Linked Role
+
+aws iam create-service-linked-role --aws-service-name spot.amazonaws.com
+
+6. Install Karpenter using Helm
+
+$response = Invoke-RestMethod -Uri "https://api.github.com/repos/aws/karpenter/releases/latest"
+$KARPENTER_VERSION = $response.tag_name
+$KARPENTER_VERSION_STR = $KARPENTER_VERSION -replace 'v'
+Write-Output "Karpenter's Latest release version: $KARPENTER_VERSION_STR"
+
+docker logout public.ecr.aws
+
+helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter --version $KARPENTER_VERSION_STR --namespace karpenter --create-namespace `
+  --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=$KARPENTER_IAM_ROLE_ARN `
+  --set settings.clusterName=$CLUSTER_NAME `
+  --set settings.clusterEndpoint=$CLUSTER_ENDPOINT `
+  --set settings.interruptionQueue=$CLUSTER_NAME `
+  --set settings.featureGates.drift=true `
+  --wait
+
+helm list -n karpenter
+kubectl get pods --namespace karpenter
+kubectl get deployment -n karpenter
+
+######################################################################################################
+
+######################## Amazon EBS CSI Driver ######################################################
+$CLUSTER_NAME="karpenter-demo"
+
+eksctl utils associate-iam-oidc-provider `
+  --region=$AWS_REGION `
+  --cluster=$CLUSTER_NAME `
+  --approve
+
+# Create a service account
+eksctl create iamserviceaccount `
+  --name ebs-csi-controller-sa `
+  --namespace kube-system `
+  --cluster $CLUSTER_NAME `
+  --attach-policy-arn arn:aws:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy `
+  --approve `
+  --role-only `
+  --role-name AmazonEKS_EBS_CSI_DriverRole
+
+##Add EBS CSI add-on
+eksctl create addon --name aws-ebs-csi-driver --cluster $CLUSTER_NAME `
+  --service-account-role-arn arn:aws:iam::357171621133:role/AmazonEKS_EBS_CSI_DriverRole --force
+
+eksctl get addon --name aws-ebs-csi-driver --cluster $CLUSTER_NAME
+
+kubectl create -f mysql-storageclass.yaml
+
+kubectl describe storageclass mysql-gp2
+#####################################################################################################
+1. kubectl apply -f pv.yaml
+
+2. kubectl create namespace workshop
+
+3. kubectl apply -f pv-deploy.yaml
+
+4. kubectl -n karpenter logs -l app.kubernetes.io/name=karpenter
+
+5. kubectl get pods -n workshop -o name
+
+6.  kubectl get pod -o=custom-columns=NODE:.spec.nodeName,NAME:.metadata.name -n workshop
+
+7. kubectl describe pod $POD -n workshop
+
+8. kubectl -n workshop exec $POD -- cat /data/out.txt
+
+9.  kubectl get pv
+
+10. kubectl get pvc -n workshop
+
+11. kubectl describe $(kubectl get pv -o name)
+
+12. kubectl delete pod -n workshop --all
+
+13. kubectl get pod -n workshop -o wide
+
+14. kubectl -n workshop exec $POD -- cat /data/out.txt
