@@ -3,12 +3,6 @@ kind: NodePool
 metadata:
   name: default
 spec:
-  disruption:
-    consolidateAfter: 30s
-    consolidationPolicy: WhenEmpty
-    expireAfter: Never
-  limits:
-    cpu: "10"
   template:
     metadata:
       labels:
@@ -16,10 +10,7 @@ spec:
     spec:
       nodeClassRef:
         name: default
-      # Requirements that constrain the parameters of provisioned nodes.
-      # These requirements are combined with pod.spec.affinity.nodeAffinity rules.
-      # Operators { In, NotIn } are supported to enable including or excluding values
-      requirements:
+      requirements: 
         - key: "karpenter.k8s.aws/instance-category"
           operator: In
           values: ["c", "m", "r"]
@@ -28,21 +19,29 @@ spec:
           values: ["amd64"]
         - key: "karpenter.sh/capacity-type" # If not included, the webhook for the AWS cloud provider will default to on-demand
           operator: In
-          values: ["on-demand"]
+          values: ["on-demand"]      
+      kubelet:
+        cpuCFSQuota: true                         
+  disruption:
+    consolidateAfter: 30s
+    consolidationPolicy: WhenEmpty
+    expireAfter: Never
+  limits:
+      cpu: "100"
 ---
 apiVersion: karpenter.k8s.aws/v1beta1
 kind: EC2NodeClass
 metadata:
   name: default
 spec:
-  amiFamily: AL2
   role: KarpenterNodeRole-karpenter-demo
-  securityGroupSelectorTerms:
-  - tags:
-      alpha.eksctl.io/cluster-name: karpenter-demo
-  subnetSelectorTerms:
-  - tags:
-      alpha.eksctl.io/cluster-name: karpenter-demo
+  amiFamily: AL2
+  subnetSelectorTerms:                             
+    - tags:
+        karpenter.sh/discovery: karpenter-demo
+  securityGroupSelectorTerms:                      
+    - tags: 
+        karpenter.sh/discovery: karpenter-demo
   tags:
-    intent: apps
-    managed-by: karpenter
+    managed-by: "karpenter"
+    eks-immersion-team: my-team
