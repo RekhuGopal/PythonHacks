@@ -1,0 +1,52 @@
+1. Join Data
+SELECT  coviddata.date,
+        coviddata.state,
+        coviddata.positiveincrease,
+        coviddata.totaltestresultsincrease,
+        statename.StateName
+FROM    coviddata LEFT JOIN statename
+        ON  coviddata.state = statename.Code
+WHERE   coviddata.state in ('NY', 'CA')
+
+
+2.  Multiple Output
+
+def CreateMultipleOutput (glueContext, dfc) -> DynamicFrameCollection:
+    df = dfc.select(list(dfc.keys())[0]).toDF()
+    from pyspark.sql import functions as f
+    
+    df.createOrReplaceTempView("inputTable")
+    df0 = spark.sql("SELECT TO_DATE(CAST(UNIX_TIMESTAMP(date, 'yyyyMMdd') AS TIMESTAMP)) as date, \
+                            state , \
+                            (positiveIncrease * 100 / totalTestResultsIncrease) as positivePercentage, \
+                            StateName \
+                    FROM inputTable ")
+    
+    df1 = df.withColumn('CombinedName', f.concat(f.col('StateName'), f.lit('('), f.col('state'), f.lit(')')))
+    
+    dyf0 = DynamicFrame.fromDF(df0, glueContext, "result0")
+    dyf1 = DynamicFrame.fromDF(df1, glueContext, "result1")
+    
+    return DynamicFrameCollection({
+                                    "CustomTransform0": dyf0, 
+                                    "CustomTransform1": dyf1
+                                    }, 
+                                    glueContext)
+
+3. Povite State
+
+SELECT  date, positivePercentageNY, positivePercentageCA
+FROM    positivepercentage 
+        pivot (avg(positivePercentage) as positivePercentage 
+        for state in ('NY' as positivePercentageNY, 'CA' as positivePercentageCA))
+
+4. Aggregate Case Count
+
+def AggregateCaseCount (glueContext, dfc) -> DynamicFrameCollection:
+    df = dfc.select(list(dfc.keys())[0]).toDF()
+    from pyspark.sql import functions as f
+    
+    df0 = df.groupBy("combinedname").agg({"positiveincrease": "sum", "totaltestresultsincrease": "sum"})
+    dyf0 = DynamicFrame.fromDF(df0, glueContext, "result0")
+    return DynamicFrameCollection({"CustomTransform0": dyf0}, glueContext)
+
