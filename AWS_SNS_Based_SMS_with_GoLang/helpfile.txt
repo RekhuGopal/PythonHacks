@@ -1,0 +1,11 @@
+##Steps
+1.cd to path
+2.init go mod
+--go mod init test
+3.get go modules
+--go get github.com/aws/aws-sdk-go
+4.set aws context
+--aws configure
+4.run go file
+--go run .\awsSNS.go
+
