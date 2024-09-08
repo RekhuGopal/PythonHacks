@@ -1,0 +1,112 @@
+{
+    "properties": {
+      "displayName": "Custom-Script-Extension-PS",
+      "policyType": "Custom",
+      "mode": "All",
+      "description": "Execute PS script with Policy",
+      "metadata": {
+        "category": "Custom",
+        "createdBy": "d9dc2582-fd85-4167-8d03-f1e62df2aea7",
+        "createdOn": "2024-09-07T11:07:26.7274009Z",
+        "updatedBy": "d9dc2582-fd85-4167-8d03-f1e62df2aea7",
+        "updatedOn": "2024-09-08T10:54:22.2975927Z"
+      },
+      "version": "1.0.0",
+      "parameters": {},
+      "policyRule": {
+        "if": {
+          "allOf": [
+            {
+              "field": "type",
+              "equals": "Microsoft.Compute/virtualMachines"
+            },
+            {
+              "anyOf": [
+                {
+                  "field": "Microsoft.Compute/virtualMachines/storageProfile.osDisk.osType",
+                  "equals": "Windows"
+                },
+                {
+                  "field": "Microsoft.Compute/virtualMachines/osProfile.windowsConfiguration",
+                  "exists": true
+                }
+              ]
+            }
+          ]
+        },
+        "then": {
+          "effect": "deployIfNotExists",
+          "details": {
+            "type": "Microsoft.Compute/virtualMachines/extensions",
+            "existenceCondition": {
+              "field": "Microsoft.Compute/virtualMachines/extensions/type",
+              "equals": "CustomScriptExtension"
+            },
+            "deployment": {
+              "properties": {
+                "mode": "incremental",
+                "template": {
+                  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+                  "contentVersion": "1.0.0.0",
+                  "parameters": {
+                    "location": {
+                      "type": "string"
+                    },
+                    "virtualMachineName": {
+                      "type": "string"
+                    }
+                  },
+                  "resources": [
+                    {
+                      "name": "[concat(parameters('virtualMachineName'),'/', 'CustomScriptExtension')]",
+                      "type": "Microsoft.Compute/virtualMachines/extensions",
+                      "apiVersion": "2023-03-01",
+                      "location": "[parameters('location')]",
+                      "properties": {
+                        "publisher": "Microsoft.Compute",
+                        "type": "CustomScriptExtension",
+                        "typeHandlerVersion": "1.10",
+                        "autoUpgradeMinorVersion": true,
+                        "settings": {
+                          "fileUris": [
+                            "https://demoscriptstorageaccount.blob.core.windows.net/psscript/PS.ps1?sp=r&st=2024-09-08T10:52:50Z&se=2024-09-08T18:52:50Z&spr=https&sv=2022-11-02&sr=b&sig=OfM6AcGPbbZ1fSLBkfOXq4GKXLRDXf5FUMKX3Ai4ViA%3D"
+                          ],
+                          "commandToExecute": "powershell.exe -ExecutionPolicy Unrestricted -File PS.ps1"
+                        },
+                        "protectedSettings": {}
+                      }
+                    }
+                  ]
+                },
+                "parameters": {
+                  "location": {
+                    "value": "[field('location')]"
+                  },
+                  "virtualMachineName": {
+                    "value": "[field('name')]"
+                  }
+                }
+              }
+            },
+            "roleDefinitionIds": [
+              "/providers/Microsoft.Authorization/roleDefinitions/b24988ac-6180-42a0-ab88-20f7382dd24c"
+            ]
+          }
+        }
+      },
+      "versions": [
+        "1.0.0"
+      ]
+    },
+    "id": "/subscriptions/063965e0-d141-48d4-b8bd-0dfdc0dc00ff/providers/Microsoft.Authorization/policyDefinitions/773d03bc-a94c-4a1b-ba1a-b213786438b7",
+    "type": "Microsoft.Authorization/policyDefinitions",
+    "name": "773d03bc-a94c-4a1b-ba1a-b213786438b7",
+    "systemData": {
+      "createdBy": "vrchinnarathod@gmail.com",
+      "createdByType": "User",
+      "createdAt": "2024-09-07T11:07:26.6942476Z",
+      "lastModifiedBy": "vrchinnarathod@gmail.com",
+      "lastModifiedByType": "User",
+      "lastModifiedAt": "2024-09-08T10:54:22.2694281Z"
+    }
+  }
