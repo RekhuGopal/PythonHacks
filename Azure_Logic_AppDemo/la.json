@@ -1,0 +1,76 @@
+{
+    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+    "contentVersion": "1.0.0.0",
+    "triggers": {
+      "Recurrence": {
+        "type": "Recurrence",
+        "recurrence": {
+          "interval": 1,
+          "frequency": "Week",
+          "timeZone": "India Standard Time",
+          "schedule": {
+            "weekDays": [
+              "Monday",
+              "Friday"
+            ],
+            "hours": [
+              "20"
+            ],
+            "minutes": [
+              0
+            ]
+          }
+        }
+      }
+    },
+    "actions": {
+      "functionappdemorg-CreateAzureResources": {
+        "type": "Function",
+        "inputs": {
+          "method": "POST",
+          "uri": "https://<FA>.azurewebsites.net/api/CreateAzureResources?code=<token>",
+          "headers": {
+            "Content-Type": "application/json"
+          },
+          "body": {
+            "name": "Rekhu"
+          }
+        },
+        "runAfter": {}
+      },
+      "Delay_30Seconds": {
+        "type": "Delay",
+        "inputs": {
+          "interval": "PT30S"
+        },
+        "runAfter": {
+          "functionappdemorg-CreateAzureResources": [
+            "Succeeded"
+          ]
+        }
+      },
+      "functionappdemorg-GetAllAzureResources": {
+        "type": "Function",
+        "inputs": {
+          "method": "POST",
+          "uri": "https://<FA>.azurewebsites.net/api/GetAllAzureResources?code=<token>",
+          "headers": {
+            "Content-Type": "application/json"
+          }
+        },
+        "runAfter": {
+          "Delay_30Seconds": [
+            "Succeeded"
+          ]
+        }
+      }
+    },
+    "outputs": {},
+    "parameters": {
+      "$connections": {
+        "type": "Object",
+        "defaultValue": {}
+      }
+    }
+  }
+  
