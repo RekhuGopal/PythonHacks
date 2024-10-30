@@ -7,15 +7,18 @@ PROJECT_NAME = "CloudQuickLabsADO"
 PIPELINE_ID = "3"
 REPO_NAME = "AzureDemoPipelineAutomation"
 BRANCH_NAME = "main"
-PAT = "<YOUR PAT TOKEN>"
+PAT = "<Your PAT>"
 PARAMETERS = {
     "environment": "prod",
     "buildVersion": "2.1.0"
 }
-# Azure DevOps REST API URL for triggering a pipeline
-URL = f"https://dev.azure.com/{ORG_NAME}/{PROJECT_NAME}/_apis/pipelines/{PIPELINE_ID}/runs?api-version=6.0-preview.1"
+
 
 def trigger_pipeline(branch_name, repo_name, parameters):
+
+    # Azure DevOps REST API URL for triggering a pipeline
+    URL = f"https://dev.azure.com/{ORG_NAME}/{PROJECT_NAME}/_apis/pipelines/{PIPELINE_ID}/runs?api-version=7.1"
+
     headers = {
         "Content-Type": "application/json"
     }
@@ -56,7 +59,7 @@ def trigger_pipeline(branch_name, repo_name, parameters):
 
 def check_pipeline_status(run_id):
     # Azure DevOps REST API URL for checking the pipeline run status
-    status_url = f"https://dev.azure.com/{ORG_NAME}/{PROJECT_NAME}/_apis/pipelines/{PIPELINE_ID}/runs/{run_id}?api-version=6.0-preview.1"
+    status_url = f"https://dev.azure.com/{ORG_NAME}/{PROJECT_NAME}/_apis/pipelines/{PIPELINE_ID}/runs/{run_id}?api-version=7.1"
     
     # Send the GET request to retrieve the pipeline run status
     response = requests.get(
@@ -79,6 +82,7 @@ def check_pipeline_status(run_id):
             print("Response Text:", response.text)
 
 #run_id = trigger_pipeline(BRANCH_NAME, REPO_NAME, PARAMETERS)  # Replace with actual branch and repository name
+#print(run_id)
 
-check_pipeline_status(11)
+check_pipeline_status(25)
 
