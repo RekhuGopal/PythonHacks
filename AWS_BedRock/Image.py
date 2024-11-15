@@ -6,7 +6,7 @@ client = boto3.client('bedrock-runtime')
 
 # Specify the input data and model ID
 input_data = {
-  "modelId": "stability.stable-diffusion-xl-v0",
+  "modelId": "stability.stable-diffusion-xl-v1",
   "contentType": "application/json",
   "accept": "application/json",
    "body": {"text_prompts":[{"text":"Sri lanka tea plantation."}],"cfg_scale":10,"seed":0,"steps":50}
