@@ -1,0 +1,6 @@
+id,first_name,last_name,email,hire_date,salary
+1,John,Doe,john.doe@example.com,2020-01-15,75000.00
+2,Jane,Smith,jane.smith@example.com,2021-03-22,68000.50
+3,Emily,Davis,emily.davis@example.com,2019-06-10,82000.00
+4,Michael,Johnson,michael.johnson@example.com,2023-09-05,91000.75
+5,Sophia,Martinez,sophia.martinez@example.com,2022-11-12,60000.25
