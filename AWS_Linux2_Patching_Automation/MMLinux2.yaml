@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Resources:
+  # SSM Patch Baseline for Amazon Linux 2
+  MySSMPatchBaseline:
+    Type: AWS::SSM::PatchBaseline
+    Properties:
+      Name: "MyAmazonLinux2PatchBaseline"
+      OperatingSystem: "AMAZON_LINUX_2"
+      ApprovalRules:
+        PatchRules:
+          - ApproveAfterDays: 7
+            PatchFilterGroup:
+              PatchFilters:
+                - Key: "CLASSIFICATION"
+                  Values:
+                    - "Security"
+                - Key: "SEVERITY"
+                  Values:
+                    - "Critical"
+                    - "Important"
+            ComplianceLevel: "CRITICAL"
+            EnableNonSecurity: false
+      Description: "Patch baseline for Amazon Linux 2"
+      DefaultPatchGroup: "MyPatchGroup"
+
+  # Maintenance Window
+  MyMaintenanceWindow:
+    Type: AWS::SSM::MaintenanceWindow
+    Properties:
+      Name: "MyMaintenanceWindow"
+      Schedule: "cron(0 2 ? * SUN *)"  # Every Sunday at 2 AM UTC
+      Duration: 2  # Maintenance window duration in hours
+      Cutoff: 1  # Maintenance window cutoff period
+      AllowUnassociatedTargets: true
+
+  # Maintenance Window Target for EC2 instances with tag "env: dev"
+  MyMaintenanceWindowTarget:
+    Type: AWS::SSM::MaintenanceWindowTarget
+    Properties:
+      WindowId: !Ref MyMaintenanceWindow
+      ResourceType: "INSTANCE"
+      Targets:
+        - Key: "tag:env"
+          Values:
+            - "dev"
+
+  # Maintenance Window Task to run patches on instances
+  MyMaintenanceWindowTask:
+    Type: AWS::SSM::MaintenanceWindowTask
+    Properties:
+      WindowId: !Ref MyMaintenanceWindow
+      Targets:
+        - Key: "tag:env"
+          Values:
+            - "dev"  # Dynamically targets instances with the tag env=dev
+      TaskType: "RUN_COMMAND"
+      TaskInvocationParameters:
+        RunCommand:
+          Comment: "Run SSM patching on EC2 instances"
+          DocumentName: "AWS-RunPatchBaseline"
+          Parameters:
+            Operation: ["Install"]
+            InstallationType: ["All"]
+      MaxConcurrency: "1"
+      MaxErrors: "1"
+      Priority: 1
+
+  # IAM Role for SSM to use when performing the patching
+  MySSMRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: "Allow"
+            Principal:
+              Service: "ssm.amazonaws.com"
+            Action: "sts:AssumeRole"
+      Policies:
+        - PolicyName: "SSMDocumentExecutionPolicy"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: "Allow"
+                Action:
+                  - "ssm:DescribeInstanceInformation"
+                  - "ssm:SendCommand"
+                  - "ssm:ListCommandInvocations"
+                  - "ssm:GetCommandInvocation"
+                  - "ec2:DescribeInstances"
+                Resource: "*"
+
+  # SSM Association for applying the patch baseline
+  MySSMAssociation:
+    Type: AWS::SSM::Association
+    Properties:
+      Name: "AWS-RunPatchBaseline"
+      Targets:
+        - Key: "tag:env"
+          Values:
+            - "dev"  # Dynamically targets EC2 instances with the tag env=dev
+      DocumentVersion: "$LATEST"
+
+  # Attach the existing IAM role to the EC2 instances
+  AttachIAMRoleToEC2:
+    Type: AWS::IAM::InstanceProfile
+    Properties:
+      Roles:
+        - "ETLlambdaAccessRole"
