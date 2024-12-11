@@ -56,7 +56,7 @@ def main():
 
     model_id = 'stability.stable-image-ultra-v1:0'
 
-    prompt = "a kitten eating mcdonald burger"
+    prompt = "A kitten eating mcdonald burger"
 
     body = json.dumps({
         "prompt": prompt,
