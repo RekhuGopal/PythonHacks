@@ -1,0 +1,26 @@
+name: Run Linux Commands on Self-Hosted Runner
+
+on:
+  push:
+    branches:
+      - main  # Trigger the workflow on a push to the 'main' branch.
+  workflow_dispatch:  # Allows manual triggering of the workflow from GitHub UI.
+
+jobs:
+  run-linux-commands:
+    runs-on: self-hosted # Use the self-hosted runner named 'githubactionsvm'
+
+    steps:
+      - name: Checkout the repository
+        uses: actions/checkout@v3  # This step checks out the repository code so that subsequent steps can access it.
+
+      - name: Run some Linux commands
+        run: |
+          echo "Starting to run Linux commands on self-hosted runner"
+          uname -a  # Show system information
+          df -h  # Show disk space usage
+          uptime  # Show system uptime
+          ls /home  # List the contents of the home directory
+
+      - name: Show current working directory
+        run: pwd  # Print the current working directory
