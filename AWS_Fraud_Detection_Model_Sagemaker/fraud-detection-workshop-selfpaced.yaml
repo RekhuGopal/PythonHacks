@@ -1,0 +1,669 @@
+Parameters:
+  UserProfileName:
+    Type: String
+    Description: The user profile name for the SageMaker workshop
+    Default: 'sagemakeruser'
+  DomainName:
+    Type: String
+    Description: The domain name of the Sagemaker studio instance
+    Default: 'fraud-detection-workshop'
+
+Mappings:
+  RegionMap:
+    us-east-1:
+      datascience: "arn:aws:sagemaker:us-east-1:081325390199:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:us-east-1:663277389841:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:us-east-1:081325390199:image/jupyter-server-3"
+    us-east-2:
+      datascience: "arn:aws:sagemaker:us-east-2:429704687514:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:us-east-2:415577184552:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:us-east-2:429704687514:image/jupyter-server-3"
+    us-west-1:
+      datascience: "arn:aws:sagemaker:us-west-1:742091327244:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:us-west-1:926135532090:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:us-west-1:742091327244:image/jupyter-server-3"
+    us-west-2:
+      datascience: "arn:aws:sagemaker:us-west-2:236514542706:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:us-west-2:174368400705:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:us-west-2:236514542706:image/jupyter-server-3"
+    af-south-1:
+      datascience: "arn:aws:sagemaker:af-south-1:559312083959:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:af-south-1:143210264188:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:af-south-1:559312083959:image/jupyter-server-3"
+    ap-east-1:
+      datascience: "arn:aws:sagemaker:ap-east-1:493642496378:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:ap-east-1:707077482487:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:ap-east-1:493642496378:image/jupyter-server-3"
+    ap-south-1:
+      datascience: "arn:aws:sagemaker:ap-south-1:394103062818:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:ap-south-1:089933028263:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:ap-south-1:394103062818:image/jupyter-server-3"
+    ap-northeast-2:
+      datascience: "arn:aws:sagemaker:ap-northeast-2:806072073708:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:ap-northeast-2:131546521161:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:ap-northeast-2:806072073708:image/jupyter-server-3"
+    ap-southeast-1:
+      datascience: "arn:aws:sagemaker:ap-southeast-1:492261229750:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:ap-southeast-1:119527597002:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:ap-southeast-1:492261229750:image/jupyter-server-3"
+    ap-southeast-2:
+      datascience: "arn:aws:sagemaker:ap-southeast-2:452832661640:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:ap-southeast-2:422173101802:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:ap-southeast-2:452832661640:image/jupyter-server-3"
+    ap-northeast-1:
+      datascience: "arn:aws:sagemaker:ap-northeast-1:102112518831:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:ap-northeast-1:649008135260:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:ap-northeast-1:102112518831:image/jupyter-server-3"
+    ca-central-1:
+      datascience: "arn:aws:sagemaker:ca-central-1:310906938811:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:ca-central-1:557239378090:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:ca-central-1:310906938811:image/jupyter-server-3"
+    eu-central-1:
+      datascience: "arn:aws:sagemaker:eu-central-1:936697816551:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:eu-central-1:024640144536:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:eu-central-1:936697816551:image/jupyter-server-3"
+    eu-west-1:
+      datascience: "arn:aws:sagemaker:eu-west-1:470317259841:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:eu-west-1:245179582081:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:eu-west-1:470317259841:image/jupyter-server-3"
+    eu-west-2:
+      datascience: "arn:aws:sagemaker:eu-west-2:712779665605:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:eu-west-2:894491911112:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:eu-west-2:712779665605:image/jupyter-server-3"
+    eu-west-3:
+      datascience: "arn:aws:sagemaker:eu-west-3:615547856133:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:eu-west-3:807237891255:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:eu-west-3:615547856133:image/jupyter-server-3"
+    eu-north-1:
+      datascience: "arn:aws:sagemaker:eu-north-1:243637512696:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:eu-north-1:054986407534:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:eu-north-1:243637512696:image/jupyter-server-3"
+    eu-south-1:
+      datascience: "arn:aws:sagemaker:eu-south-1:488287956546:image/sagemaker-data-wrangler-1.0"
+      datawrangler: "arn:aws:sagemaker:eu-south-1:592751261982:image/datascience-1.0"
+      jupyter: "arn:aws:sagemaker:eu-south-1:488287956546:image/jupyter-server-3"
+    sa-east-1:
+      datascience: "arn:aws:sagemaker:sa-east-1:782484402741:image/datascience-1.0"
+      datawrangler: "arn:aws:sagemaker:sa-east-1:424196993095:image/sagemaker-data-wrangler-1.0"
+      jupyter: "arn:aws:sagemaker:sa-east-1:782484402741:image/jupyter-server-3"
+
+Resources:
+  LambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/IAMFullAccess'
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  SageMakerExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Policies:
+        - PolicyName: s3-access
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - s3:GetObject
+                  - s3:PutObject
+                  - s3:DeleteObject
+                  - s3:ListBucket
+                Resource: arn:aws:s3:::*
+        - PolicyName: lambda-deployment
+          PolicyDocument:
+            Version: 2012-10-17
+            Statement:
+              -
+                Effect: Allow
+                Action:
+                  - lambda:CreateFunction
+                  - lambda:DeleteFunction
+                  - lambda:InvokeFunction
+                  - lambda:UpdateFunctionCode
+                Resource:
+                  - "arn:aws:lambda:*:*:function:*"
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          -
+            Effect: Allow
+            Principal:
+              Service:
+                - sagemaker.amazonaws.com
+            Action:
+              - sts:AssumeRole
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonSageMakerFullAccess'
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/AWSCloudFormationFullAccess'
+        - 'arn:aws:iam::aws:policy/AWSCodePipeline_FullAccess'
+
+  LambdaExecutionPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: CloudWatchLogsPermissions
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
+          - Sid: SageMakerDomainPermission
+            Effect: Allow
+            Action:
+              - sagemaker:ListDomains
+              - sagemaker:CreateDomain
+              - sagemaker:DescribeDomain
+              - sagemaker:DeleteDomain
+              - sagemaker:UpdateDomain
+              - sagemaker:ListUserProfiles
+              - sagemaker:CreateUserProfile
+              - sagemaker:UpdateUserProfile
+              - sagemaker:DeleteUserProfile
+              - sagemaker:DescribeUserProfile
+              - sagemaker:ListApps
+              - sagemaker:CreateApp
+              - sagemaker:DescribeApp
+              - sagemaker:DeleteApp
+              - sagemaker:UpdateApp
+            Resource:
+              - !Sub "arn:${AWS::Partition}:sagemaker:*:*:domain/*"
+              - !Sub "arn:${AWS::Partition}:sagemaker:*:*:user-profile/*"
+              - !Sub "arn:${AWS::Partition}:sagemaker:*:*:app/*"
+          - Sid: SageMakerProjectsPermission
+            Effect: Allow
+            Action:
+              - servicecatalog:AcceptPortfolioShare
+              - sagemaker:EnableSagemakerServicecatalogPortfolio
+              - sagemaker:DisableSagemakerServicecatalogPortfolio
+            Resource: '*'
+          - Sid: ServiceCatalogPermission
+            Effect: Allow
+            Action:
+              - servicecatalog:Accept*
+              - servicecatalog:Associate*
+              - servicecatalog:Batch*
+              - servicecatalog:Copy*
+              - servicecatalog:Create*
+              - servicecatalog:Delete*
+              - servicecatalog:Describe*
+              - servicecatalog:Disable*
+              - servicecatalog:Disassociate*
+              - servicecatalog:Enable*
+              - servicecatalog:Execute*
+              - servicecatalog:Get*
+              - servicecatalog:Import*
+              - servicecatalog:List*
+              - servicecatalog:Provision*
+              - servicecatalog:Put*
+              - servicecatalog:Reject*
+              - servicecatalog:Scan*
+              - servicecatalog:Sync*
+              - servicecatalog:Terminate*
+              - servicecatalog:Update*
+              - servicecatalog:Search*
+            Resource: '*'
+          - Sid: SageMakerExecPassRole
+            Effect: Allow
+            Action:
+              - iam:PassRole
+            Resource: !GetAtt  SageMakerExecutionRole.Arn
+      Roles:
+        - !Ref  LambdaExecutionRole
+
+
+  DeployEndpointLambdaExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+      ManagedPolicyArns:
+        - 'arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess'
+        - 'arn:aws:iam::aws:policy/AmazonS3FullAccess'
+        - 'arn:aws:iam::aws:policy/IAMFullAccess'
+        - 'arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole'
+
+
+  DeployEndpointLambdaExecutionPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: CloudWatchLogsPermissions
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
+          - Sid: LambdaPermissions
+            Effect: Allow
+            Action:
+              - lambda:CreateFunction
+              - lambda:DeleteFunction
+              - lambda:InvokeFunction
+              - lambda:UpdateFunctionCode
+            Resource:
+              - "arn:aws:lambda:*:*:function:*sagemaker*"
+          - Sid: SageMakerSQSPermission
+            Effect: Allow
+            Action:
+              - sqs:CreateQueue
+              - sqs:SendMessage
+            Resource:
+              - "arn:aws:sqs:*:*:*sagemaker*"
+          - Sid: SageMakerCreateEndpointPermission
+            Effect: Allow
+            Action:
+              - sagemaker:CreateEndpointConfig
+              - sagemaker:CreateEndpoint
+            Resource:
+              - "arn:aws:sagemaker:*:*:endpoint-config/*"
+              - "arn:aws:sagemaker:*:*:endpoint/*"
+      Roles:
+        - !Ref  DeployEndpointLambdaExecutionRole
+
+  LambdaLifecycleExecutionRole:
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+            Action:
+              - "sts:AssumeRole"
+      Path: /
+
+  LambdaLifecycleExecutionPolicy:
+    Type: AWS::IAM::ManagedPolicy
+    Properties:
+      Path: /
+      PolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Sid: CloudWatchLogsPermissions
+            Effect: Allow
+            Action:
+              - logs:CreateLogGroup
+              - logs:CreateLogStream
+              - logs:PutLogEvents
+            Resource: !Sub "arn:${AWS::Partition}:logs:*:*:*"
+          - Sid: SageMakerDomainPermission
+            Effect: Allow
+            Action:
+              - sagemaker:UpdateUserProfile
+              - sagemaker:CreateStudioLifecycleConfig
+            Resource: '*'
+      Roles:
+        - !Ref  LambdaLifecycleExecutionRole
+
+
+  # Adding a wait time after SageMakerExecutionRole creation
+  # this is due to https://t.corp.amazon.com/P45031666
+  DomainDeploymentDelay:
+    Type: 'Custom::Delay'
+    DependsOn: SageMakerExecutionRole
+    Properties:
+      ServiceToken: !GetAtt DelayLambda.Arn
+      TimeToWait: 300
+
+  DelayLambda:
+    Type: 'AWS::Lambda::Function'
+    Properties:
+      Handler: "index.handler"
+      Timeout: 660
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.12
+      Code:
+        ZipFile: |
+          import json
+          import cfnresponse
+          import time
+          def handler(event, context):
+            time_to_wait = int(event['ResourceProperties']['TimeToWait'])
+            print(f'Waiting for {time_to_wait} seconds')
+            time.sleep(time_to_wait)
+            print(f'Waiting finished')
+            cfnresponse.send(event, context, cfnresponse.SUCCESS, {},'')
+
+  DefaultVpcLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: CFGetDefaultVpcId
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+          import cfnresponse
+
+          ec2 = boto3.client('ec2')
+
+          def lambda_handler(event, context):
+              if 'RequestType' in event and event['RequestType'] == 'Create':
+                  vpc_id = get_default_vpc_id()
+                  subnets =  get_subnets_for_vpc(vpc_id)
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {'VpcId': vpc_id , "Subnets" : subnets}, '')
+              else:
+                  cfnresponse.send(event, context, cfnresponse.SUCCESS, {},'')
+
+          def get_default_vpc_id():
+              vpcs = ec2.describe_vpcs(Filters=[{'Name': 'is-default', 'Values': ['true']}])
+              vpcs = vpcs['Vpcs']
+              vpc_id = vpcs[0]['VpcId']
+              return vpc_id
+
+
+          def get_subnets_for_vpc(vpcId):
+              response = ec2.describe_subnets(
+                  Filters=[
+                      {
+                          'Name': 'vpc-id',
+                          'Values': [vpcId]
+                      }
+                  ]
+              )
+              subnet_ids = []
+              for subnet in response['Subnets']:
+                  subnet_ids.append(subnet['SubnetId'])
+              return subnet_ids
+      Description: Return default VPC ID and Subnets
+      Handler: index.lambda_handler
+      MemorySize: 512
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.12
+      Timeout: 5
+  DefaultVpcFinder:
+    Type: Custom::ResourceForFindingDefaultVpc
+    Properties:
+      ServiceToken: !GetAtt DefaultVpcLambda.Arn
+
+
+  DeployEndpointLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: EndpointDeployer
+      Code:
+        ZipFile: |
+          import json
+          import boto3
+
+          def lambda_handler(event, context):
+              sm_client = boto3.client("sagemaker")
+
+              # The name of the model created in the Pipeline CreateModelStep
+              model_name = event["model_name"]
+              endpoint_config_name = event["endpoint_config_name"]
+              endpoint_name = event["endpoint_name"]
+
+              create_endpoint_config_response = sm_client.create_endpoint_config(
+                  EndpointConfigName=endpoint_config_name,
+                  ProductionVariants=[
+                      {
+                          "InstanceType": "ml.m5.xlarge",
+                          "InitialVariantWeight": 1,
+                          "InitialInstanceCount": 1,
+                          "ModelName": model_name,
+                          "VariantName": "AllTraffic",
+                      }
+                  ],
+              )
+
+              create_endpoint_response = sm_client.create_endpoint(EndpointName=endpoint_name, EndpointConfigName=endpoint_config_name)
+              return {
+                  "statusCode": 200,
+                  "body": json.dumps("Created Endpoint!"),
+                  "other_key": "example_value",
+              }
+      Description: Create Endpoint Config & Sagemaker Endpoint
+      Handler: index.lambda_handler
+      MemorySize: 512
+      Role: !GetAtt DeployEndpointLambdaExecutionRole.Arn
+      Runtime: python3.12
+      Timeout: 5
+
+
+  StudioLifecycleLambda:
+    Type: AWS::Lambda::Function
+    DependsOn: UserProfile
+    Properties:
+      FunctionName: LifecyleStudioConfig
+      Code:
+        ZipFile: |
+          import os
+          import json
+          import boto3
+          import base64
+          import cfnresponse
+
+          GIT_CLONE_CMD = 'git clone https://github.com/aws-samples/amazon-sagemaker-samples \n'
+          GIT_CLONE_CMD += 'cd amazon-sagemaker-samples \n'
+          GIT_CLONE_CMD += 'mv amazon-sagemaker-fraud-detection .. \n'
+          GIT_CLONE_CMD += 'cd .. \n'
+          GIT_CLONE_CMD += 'rm -rf amazon-sagemaker-samples \n'
+          DOMAIN_ID = os.getenv('DOMAIN_ID')
+          USER_PROFILE_NAME = os.getenv('USER_PROFILE_NAME')
+
+          def lambda_handler(event, context):
+
+              response_status = cfnresponse.SUCCESS
+              execution_role = event['ResourceProperties']['ExecutionRole']
+
+              if 'RequestType' in event and event['RequestType'] == 'Create':
+                  enable_lifecycle(execution_role)
+              cfnresponse.send(event, context, response_status, {}, '')
+
+          def enable_lifecycle(execution_role):
+
+              #Encode cmd into Base64
+              cmd_bytes = GIT_CLONE_CMD.encode('ascii')
+              base64_bytes = base64.b64encode(cmd_bytes)
+              base64_string = base64_bytes.decode("ascii")
+
+              sagemaker = boto3.client('sagemaker')
+
+              # Create Lifecycle config
+              response = sagemaker.create_studio_lifecycle_config(
+                  StudioLifecycleConfigName='git-clone-step',
+                  StudioLifecycleConfigContent=base64_string,
+                  StudioLifecycleConfigAppType='JupyterServer'
+              )
+
+              # Get Lifecycle ARN
+              lifecycle_arn = response.get('StudioLifecycleConfigArn')
+              print(lifecycle_arn)
+
+              # Update SageMaker
+              response_sm_profile = sagemaker.update_user_profile(
+                  DomainId=DOMAIN_ID,
+                  UserProfileName=USER_PROFILE_NAME,
+                  UserSettings={
+                      "JupyterServerAppSettings": {
+                        "DefaultResourceSpec": {
+                          "LifecycleConfigArn": lifecycle_arn,
+                          "InstanceType": "system"
+                        },
+                        "LifecycleConfigArns":
+                          [lifecycle_arn]
+                      }
+                  }
+              )
+
+              print(response_sm_profile)
+      Description: Configure Studio Lifecycle
+      Handler: index.lambda_handler
+      MemorySize: 512
+      Role: !GetAtt LambdaLifecycleExecutionRole.Arn
+      Runtime: python3.12
+      Timeout: 10
+      Environment:
+        Variables:
+          DOMAIN_ID: !GetAtt StudioDomain.DomainId
+          USER_PROFILE_NAME: !Ref UserProfileName
+
+  StudioDomain:
+    Type: AWS::SageMaker::Domain
+    DependsOn: DomainDeploymentDelay
+    Properties:
+      AppNetworkAccessType: PublicInternetOnly
+      AuthMode: IAM
+      DefaultUserSettings:
+          ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+          JupyterServerAppSettings:
+            DefaultResourceSpec:
+              SageMakerImageArn: !FindInMap
+              - RegionMap
+              - !Ref 'AWS::Region'
+              - jupyter
+              InstanceType: "system"
+      DomainName: !Ref DomainName
+      SubnetIds: !GetAtt DefaultVpcFinder.Subnets
+      VpcId: !GetAtt DefaultVpcFinder.VpcId
+
+  EnableProjectsLambda:
+    Type: AWS::Lambda::Function
+    DependsOn: StudioDomain
+    Properties:
+      FunctionName: CFEnableSagemakerProjects
+      Code:
+        ZipFile: |
+          # Function: CFEnableSagemakerProjects
+          # Purpose:  Enables Sagemaker Projects
+          import json
+          import boto3
+          import cfnresponse
+
+          client = boto3.client('sagemaker')
+          sc_client = boto3.client('servicecatalog')
+
+          def lambda_handler(event, context):
+              response_status = cfnresponse.SUCCESS
+              execution_role = event['ResourceProperties']['ExecutionRole']
+
+              if 'RequestType' in event and event['RequestType'] == 'Create':
+                  enable_projects(execution_role)
+              cfnresponse.send(event, context, response_status, {}, '')
+
+
+          def enable_projects(studio_role_arn):
+              # enable Project on account level (accepts portfolio share)
+              response = client.enable_sagemaker_servicecatalog_portfolio()
+
+              # associate studio role with portfolio
+              response = sc_client.list_accepted_portfolio_shares()
+
+              portfolio_id = ''
+              for portfolio in response['PortfolioDetails']:
+                  if portfolio['ProviderName'] == 'Amazon SageMaker':
+                      portfolio_id = portfolio['Id']
+
+              response = sc_client.associate_principal_with_portfolio(
+                  PortfolioId=portfolio_id,
+                  PrincipalARN=studio_role_arn,
+                  PrincipalType='IAM'
+              )
+      Description: Enable Sagemaker Projects
+      Handler: index.lambda_handler
+      MemorySize: 512
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Runtime: python3.12
+      Timeout: 5
+
+  EnableProjects:
+    Type: Custom::ResourceForEnablingSageMakerProjects
+    Properties:
+      ServiceToken: !GetAtt EnableProjectsLambda.Arn
+      ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+
+  EnableLifecycle:
+    Type: Custom::ResourceForEnablingLifecycleOnSageMaker
+    Properties:
+      ServiceToken: !GetAtt StudioLifecycleLambda.Arn
+      ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+
+  UserProfile:
+    Type: AWS::SageMaker::UserProfile
+    Properties:
+      DomainId: !GetAtt StudioDomain.DomainId
+      UserProfileName: !Ref UserProfileName
+      UserSettings:
+        ExecutionRole: !GetAtt SageMakerExecutionRole.Arn
+
+  JupyterApp:
+    Type: AWS::SageMaker::App
+    DependsOn:
+      - UserProfile
+      - EnableLifecycle
+    Properties:
+      AppName: default
+      AppType: JupyterServer
+      DomainId: !GetAtt StudioDomain.DomainId
+      UserProfileName: !Ref UserProfileName
+
+  DataScienceApp:
+    Type: AWS::SageMaker::App
+    DependsOn:
+      - UserProfile
+      - EnableLifecycle
+    Properties:
+      AppName: instance-event-engine-datascience-ml-t3-medium
+      AppType: KernelGateway
+      DomainId: !GetAtt StudioDomain.DomainId
+      ResourceSpec:
+        InstanceType:  ml.t3.medium
+        SageMakerImageArn: !FindInMap
+          - RegionMap
+          - !Ref 'AWS::Region'
+          - datascience
+      UserProfileName: !Ref UserProfileName
+
+  DataWranglerApp:
+    Type: AWS::SageMaker::App
+    DependsOn:
+      - UserProfile
+      - EnableLifecycle
+    Properties:
+      AppName: instance-event-engine-datawrangler-ml-m5-4xlarge
+      AppType: KernelGateway
+      DomainId: !GetAtt StudioDomain.DomainId
+      ResourceSpec:
+        InstanceType:  ml.m5.4xlarge
+        SageMakerImageArn: !FindInMap
+          - RegionMap
+          - !Ref 'AWS::Region'
+          - datawrangler
+      UserProfileName: !Ref UserProfileName
+
+Outputs:
+  DeployEndpointLambda:
+    Value: !GetAtt DeployEndpointLambda.Arn
