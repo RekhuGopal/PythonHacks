@@ -1,0 +1,3 @@
+pip install azure-ai-vision-imageanalysis
+pip install azure.identity
+pip install aiohttp
