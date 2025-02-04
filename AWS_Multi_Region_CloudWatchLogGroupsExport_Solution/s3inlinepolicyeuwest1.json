@@ -1,0 +1,23 @@
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "uploadlogsGetAcl",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "logs.eu-west-1.amazonaws.com"
+            },
+            "Action": "s3:GetBucketAcl",
+            "Resource": "arn:aws:s3:::logexportbucketceuwest1"
+        },
+        {
+            "Sid": "uploadlogsPutObject",
+            "Effect": "Allow",
+            "Principal": {
+                "Service": "logs.eu-west-1.amazonaws.com"
+            },
+            "Action": "s3:PutObject",
+            "Resource": "arn:aws:s3:::logexportbucketceuwest1/*"
+        }
+    ]
+}
