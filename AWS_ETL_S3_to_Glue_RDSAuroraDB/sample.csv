@@ -1,0 +1,4 @@
+first_name, last_name, email, hire_date, salary
+John, Doe, john.doe@example.com, 2023-01-15, 60000.00
+Jane, Smith, jane.smith@example.com, 2023-02-20, 75000.00
+Alice, Johnson, alice.johnson@example.com, 2023-03-05, 80000.00
