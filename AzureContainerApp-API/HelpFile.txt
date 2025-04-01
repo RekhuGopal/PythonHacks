@@ -1,43 +1,42 @@
 # Create environment variables
-RESOURCE_GROUP="album-containerapps"
-LOCATION="canadacentral"
-ENVIRONMENT="env-album-containerapps"
-API_NAME="album-api"
-FRONTEND_NAME="album-ui"
-GITHUB_USERNAME="<YOUR_GITHUB_USERNAME>"
-
-ACR_NAME="acaalbums"$GITHUB_USERNAME
+$RESOURCE_GROUP="album-containerapps"
+$LOCATION="eastus"
+$ENVIRONMENT="env-album-containerapps"
+$API_NAME="album-api"
+$FRONTEND_NAME="album-ui"
+$GITHUB_USERNAME="RekhuGopal"
+$ACR_NAME="acaalbumsrekhugopal"
 
 # Prepare the GitHub repository
-git clone https://github.com/$GITHUB_USERNAME/containerapps-albumapi-python.git code-to-cloud
-cd code-to-cloud/src
+git clone https://github.com/Azure-Samples/containerapps-albumapi-python.git
+cd containerapps-albumapi-python/src
 
 # Create an Azure resource group
 az group create --name $RESOURCE_GROUP --location "$LOCATION"
 
 # Create an Azure Container Registry
-az acr create --resource-group $RESOURCE_GROUP --location $LOCATION --name $ACR_NAME --sku Basic
+az acr create --resource-group $RESOURCE_GROUP --location $LOCATION --name "acaalbumsrekhugopal" --sku Basic
 
-az acr config authentication-as-arm show --registry "$ACR_NAME"
+az acr config authentication-as-arm show --registry "acaalbumsrekhugopal"
 
-az acr config authentication-as-arm update --registry "$ACR_NAME" --status enabled
+az acr config authentication-as-arm update --registry "acaalbumsrekhugopal" --status enabled
 
 # Create a user-assigned managed identity
-IDENTITY="<YOUR_IDENTITY_NAME>"
+$IDENTITY="cloudquicklabs"
 az identity create --name $IDENTITY --resource-group $RESOURCE_GROUP
-IDENTITY_ID=$(az identity show --name $IDENTITY --resource-group $RESOURCE_GROUP --query id --output tsv)
+$IDENTITY_ID=$(az identity show --name $IDENTITY --resource-group $RESOURCE_GROUP --query id --output tsv)
 
 #Build your application
 #Build the container with Docker
-docker build --tag $ACR_NAME.azurecr.io/$API_NAME .
+docker build --tag acaalbumsrekhugopal.azurecr.io/myimage:latest .
 
 #Push the image to your container registry
 az acr login --name $ACR_NAME 
 
-docker push $ACR_NAME.azurecr.io/$API_NAME
+docker push acaalbumsrekhugopal.azurecr.io/myimage:latest
 
 #Create a Container Apps environment
 az containerapp env create --name $ENVIRONMENT --resource-group $RESOURCE_GROUP --location "$LOCATION"
 
 # Deploy your image to a container app
-az containerapp create --name $API_NAME --resource-group $RESOURCE_GROUP --environment $ENVIRONMENT --image $ACR_NAME.azurecr.io/$API_NAME --target-port 8080 --ingress external --registry-server $ACR_NAME.azurecr.io --user-assigned "$IDENTITY_ID" --registry-identity "$IDENTITY_ID" --query properties.configuration.ingress.fqdn
+az containerapp create --name $API_NAME --resource-group $RESOURCE_GROUP --environment $ENVIRONMENT --image acaalbumsrekhugopal.azurecr.io/myimage:latest --target-port 8080 --ingress external --registry-server acaalbumsrekhugopal.azurecr.io --user-assigned "$IDENTITY_ID" --registry-identity "$IDENTITY_ID" --query properties.configuration.ingress.fqdn
