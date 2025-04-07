@@ -1,0 +1,123 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  - group: oci-auth   # Contains OCI_USER_OCID, OCI_FINGERPRINT, OCI_REGION, OCI_TENANCY_OCID, OCI_KEY_FILE
+  - name: terraformWorkingDirectory
+    value: 'Terraform'
+  - name: ociServiceConnection
+    value: 'OCI-SC'
+  - name: ociBackendStateURL
+    value: 'https://objectstorage.us-sanjose-1.oraclecloud.com/p/M5_ulGz_cho4uPN94U4VI4o8kDzySSwOYN2FzmqKHgXbi-C2Fo3B_WosuG0TgsZY/n/axxeo7mon9c6/b/bucket-20240817-1023/o/terraform.tfstate'
+
+stages:
+  - stage: TerraformCI
+    displayName: 'Terraform Init & Plan'
+    jobs:
+      - job: Plan
+        displayName: 'Init and Plan'
+        steps:
+
+          - task: TerraformInstaller@1
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - script: |
+              echo "##[group]Write OCI Config and Private Key"
+              mkdir -p ~/.oci
+              echo "[DEFAULT]" > ~/.oci/config
+              echo "user=$(user_ocid)" >> ~/.oci/config
+              echo "fingerprint=$(fingerprint)" >> ~/.oci/config
+              echo "region=$(region)" >> ~/.oci/config
+              echo "tenancy=$(tenancy_ocid)" >> ~/.oci/config
+              echo "key_file=~/.oci/key.pem" >> ~/.oci/config
+              echo "$(private_key)" | sed 's/-----BEGIN PRIVATE KEY-----/-----BEGIN PRIVATE KEY-----\n/' | sed 's/-----END PRIVATE KEY-----/\n-----END PRIVATE KEY-----/' | sed 's/\\n/\n/g' > ~/.oci/key.pem
+              chmod 600 ~/.oci/key.pem
+              echo "##[endgroup]"
+            displayName: 'Write OCI Config & Key'
+
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+            displayName: 'Terraform : Init'
+            inputs:
+              provider: 'oci'
+              command: 'init'
+              workingDirectory: '$(terraformWorkingDirectory)'
+              backendServiceOCI: '$(ociServiceConnection)'
+              backendOCIPar: '$(ociBackendStateURL)'
+
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+            displayName: 'Terraform : Plan'
+            inputs:
+              provider: 'oci'
+              command: 'plan'
+              workingDirectory: '$(terraformWorkingDirectory)'
+              backendServiceOCI: '$(ociServiceConnection)'
+              environmentServiceNameOCI: '$(ociServiceConnection)'
+              commandOptions: '-var-file=terraform.tfvars -out=tfplan'
+              publishPlanResults: true
+              planOutputFile: 'tfplan'
+
+  - stage: TerraformApply
+    displayName: 'Terraform Apply'
+    dependsOn: TerraformCI
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - job: Apply
+        displayName: 'Terraform Apply'
+        steps:
+
+          - task: TerraformInstaller@1
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: 'latest'
+
+          - script: |
+              echo "##[group]Write OCI Config and Private Key"
+              mkdir -p ~/.oci
+              echo "[DEFAULT]" > ~/.oci/config
+              echo "user=$(user_ocid)" >> ~/.oci/config
+              echo "fingerprint=$(fingerprint)" >> ~/.oci/config
+              echo "region=$(region)" >> ~/.oci/config
+              echo "tenancy=$(tenancy_ocid)" >> ~/.oci/config
+              echo "key_file=~/.oci/key.pem" >> ~/.oci/config
+              echo "$(private_key)" | sed 's/-----BEGIN PRIVATE KEY-----/-----BEGIN PRIVATE KEY-----\n/' | sed 's/-----END PRIVATE KEY-----/\n-----END PRIVATE KEY-----/' | sed 's/\\n/\n/g' > ~/.oci/key.pem
+              chmod 600 ~/.oci/key.pem
+              echo "##[endgroup]"
+            displayName: 'Write OCI Config & Key'
+
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+            displayName: 'Terraform : Init'
+            inputs:
+              provider: 'oci'
+              command: 'init'
+              workingDirectory: '$(terraformWorkingDirectory)'
+              backendServiceOCI: '$(ociServiceConnection)'
+              backendOCIPar: '$(ociBackendStateURL)'
+
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+            displayName: 'Terraform : Plan'
+            inputs:
+              provider: 'oci'
+              command: 'plan'
+              workingDirectory: '$(terraformWorkingDirectory)'
+              backendServiceOCI: '$(ociServiceConnection)'
+              environmentServiceNameOCI: '$(ociServiceConnection)'
+              commandOptions: '-var-file=terraform.tfvars -out=tfplan'
+              publishPlanResults: true
+              planOutputFile: 'tfplan'
+
+          - task: ms-devlabs.custom-terraform-tasks.custom-terraform-release-task.TerraformTaskV4@4
+            displayName: 'Terraform : Apply'
+            inputs:
+              provider: 'oci'
+              command: 'apply'
+              workingDirectory: '$(terraformWorkingDirectory)'
+              backendServiceOCI: '$(ociServiceConnection)'
+              environmentServiceNameOCI: '$(ociServiceConnection)'
+              commandOptions: '-auto-approve tfplan'
