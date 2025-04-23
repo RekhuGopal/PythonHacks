@@ -1,0 +1,32 @@
+#login Azure
+az login --use-device-code
+
+$RESOURCE_GROUP="jobs-quickstart"
+$LOCATION="eastus"
+$ENVIRONMENT="env-jobs-quickstart"
+$JOB_NAME="my-job"
+
+az group create --name "$RESOURCE_GROUP" --location "$LOCATION"
+
+#Create a Container Apps environment
+az containerapp env create --name "$ENVIRONMENT" --resource-group "$RESOURCE_GROUP" --location "$LOCATION"
+
+#Create and run a scheduled/manual job
+az containerapp job create --name "$JOB_NAME" --resource-group "$RESOURCE_GROUP"  --environment "$ENVIRONMENT" --trigger-type "Manual" --replica-timeout 1800 --image "mcr.microsoft.com/k8se/quickstart-jobs:latest" --cpu "0.25" --memory "0.5Gi"
+
+#Start an execution of the job using the following command.
+az containerapp job start --name "$JOB_NAME" --resource-group "$RESOURCE_GROUP"
+
+#List recent job execution history
+az containerapp job execution list --name "$JOB_NAME" --resource-group "$RESOURCE_GROUP" --output table --query '[].{Status: properties.status, Name: name, StartTime: properties.startTime}'
+
+#Query job execution logs
+$LOG_ANALYTICS_WORKSPACE_ID=$(az containerapp env show --name "$ENVIRONMENT" --resource-group "$RESOURCE_GROUP" --query "properties.appLogsConfiguration.logAnalyticsConfiguration.customerId" --output tsv)
+
+$JOB_EXECUTION_NAME=$(az containerapp job execution list --name "$JOB_NAME" --resource-group "$RESOURCE_GROUP" --query "[0].name" --output tsv)
+
+az monitor log-analytics query --workspace "$LOG_ANALYTICS_WORKSPACE_ID" --analytics-query "ContainerAppConsoleLogs_CL | where ContainerGroupName_s startswith '$JOB_EXECUTION_NAME' | order by _timestamp_d asc" --query "[].Log_s"
+
+# Delete RESOURCE_GROUP
+az group delete --name "$RESOURCE_GROUP"
+
