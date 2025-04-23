@@ -1,0 +1,124 @@
+name: Azure-Policies-Deployment-As-Code
+trigger:
+  branches:
+    include:
+      - develop
+      - release
+      - master
+variables:
+  foldervalue: 'Governance-Policies'
+stages:
+  - stage: Develop_Plan
+    displayName: 'Develop Plan Stage'
+    condition: and(ne(variables['build.sourceBranch'], 'refs/heads/release'), ne(variables['build.sourceBranch'], 'refs/heads/master'))
+    jobs:
+    - job: Plan
+      displayName: "Terraform Plan"
+      pool:
+        vmImage: 'ubuntu-latest'
+      variables:
+        - group: 'Azure-Pipeline-Develop'
+      steps:
+          - task: TerraformInstaller@1
+            displayName: tfinstall
+            inputs:
+              terraformVersion: '1.8.4'  
+          - task: TerraformTaskV4@4
+            displayName: init
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'SC'
+              backendAzureRmResourceGroupName: 'costoptimizationsas'
+              backendAzureRmStorageAccountName: 'costoptimizationsas'
+              backendAzureRmContainerName: 'tfstate'
+              backendAzureRmKey: 'policies.tfstate'
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+          - task: TerraformTaskV4@4
+            displayName: validate
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+          - task: TerraformTaskV4@4
+            displayName: plan
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+              commandOptions: '-var-file=parametersValues.json -out=tfplan'
+              environmentServiceNameAzureRM: 'SC'
+
+  - stage: Develop_Apply
+    displayName: 'Develop Apply Stage'
+    condition: succeeded('Develop_Plan')
+    jobs:
+    - job: Apply
+      displayName: "Terraform Apply"
+      pool:
+        vmImage: 'ubuntu-latest'
+      variables:
+        - group: 'Azure-Pipeline-Develop'
+      steps:
+          - task: TerraformInstaller@1
+            displayName: tfinstall
+            inputs:
+              terraformVersion: '1.8.4'  
+          - task: TerraformTaskV4@4
+            displayName: init
+            inputs:
+              provider: 'azurerm'
+              command: 'init'
+              backendServiceArm: 'SC'
+              backendAzureRmResourceGroupName: 'costoptimizationsas'
+              backendAzureRmStorageAccountName: 'costoptimizationsas'
+              backendAzureRmContainerName: 'tfstate'
+              backendAzureRmKey: 'policies.tfstate'
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+          - task: TerraformTaskV4@4
+            displayName: validate
+            inputs:
+              provider: 'azurerm'
+              command: 'validate'
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+          - task: TerraformTaskV4@4
+            displayName: plan
+            inputs:
+              provider: 'azurerm'
+              command: 'plan'
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+              commandOptions: '-var-file=parametersValues.json -out=tfplan'
+              environmentServiceNameAzureRM: 'SC'
+          - task: TerraformTaskV4@4
+            displayName: apply
+            inputs:
+              provider: 'azurerm'
+              command: 'apply'
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+              commandOptions: '-auto-approve tfplan'
+              environmentServiceNameAzureRM: 'SC'
+          - task: UsePythonVersion@0
+            displayName: "Set Python Version to 3.11"
+            inputs:
+              versionSpec: '3.11'
+              architecture: 'x64'
+          - task: Bash@3
+            displayName: 'Install pip requirements for pytest'
+            inputs:
+              targetType: 'inline'
+              script: |
+                python -m pip install --upgrade pip
+                pip install -r ./requirements.txt
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+          - task: Bash@3
+            displayName: 'Pytest Unit Test with Coverage'
+            inputs:
+              targetType: 'inline'
+              script: |
+                pytest $(Build.SourcesDirectory)/$(foldervalue)/AzureTestExecutions --junitxml=$(Build.SourcesDirectory)/junit/test-results.xml --cov=$(Build.SourcesDirectory)/$(foldervalue)/AzureTestCases --cov-report=xml
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)/AzureTestExecutions'
+            env:
+              SPNClient: $(SPNClient)
+              SPNClientSct: $(SPNClientSct)
+              SPNTenant: $(SPNTenant)
+              AzureENV: $(AzureENV)

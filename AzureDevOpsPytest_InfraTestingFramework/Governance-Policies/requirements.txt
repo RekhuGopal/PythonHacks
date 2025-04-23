@@ -1,0 +1,7 @@
+pytest
+pytest-cov
+pytest-azurepipelines
+unittest-xml-reporting
+azure-mgmt-resource
+azure-mgmt-storage
+azure-identity

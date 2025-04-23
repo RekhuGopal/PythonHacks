@@ -1,0 +1,9 @@
+{
+    "allowedResourceGroups": {
+      "type": "Array",
+      "metadata": {
+        "description": "List of allowed resource groups for Azure AI services.",
+        "displayName": "Allowed Resource Groups"
+      }
+    }
+}

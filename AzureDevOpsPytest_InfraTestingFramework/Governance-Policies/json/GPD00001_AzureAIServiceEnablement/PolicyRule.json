@@ -1,0 +1,23 @@
+{
+    "if": {
+      "allOf": [
+        {
+          "field": "type",
+          "in": [
+            "Microsoft.CognitiveServices/accounts",
+            "Microsoft.Search/searchServices",
+            "Microsoft.MachineLearningServices/workspaces",
+            "Microsoft.BotService/botServices",
+            "Microsoft.OpenAI/services"
+          ]
+        },
+        {
+          "value": "[resourceGroup().name]",
+          "notIn": "[parameters('allowedResourceGroups')]"
+        }
+      ]
+    },
+    "then": {
+      "effect": "deny"
+    }
+  }

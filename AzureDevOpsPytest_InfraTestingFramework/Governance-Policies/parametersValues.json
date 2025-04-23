@@ -1,0 +1,16 @@
+{
+  "General": {
+    "ENV": {
+      "Name": "CloudQuickLabs",
+      "ShortName": "LABS",
+      "Id": "063965e0-d141-48d4-b8bd-0dfdc0dc00ff"
+    }
+  },
+  "Policies": {
+    "AZ-AS-GPD-00001": {
+      "allowedResourceGroups": {
+        "value": ["costoptimizationsas"]
+      }
+    }
+  }
+}
