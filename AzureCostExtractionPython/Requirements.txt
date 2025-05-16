@@ -1,0 +1,3 @@
+# Modules to import
+pip install azure-mgmt-costmanagement
+pip install azure-identity
