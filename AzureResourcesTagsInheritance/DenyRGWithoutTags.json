@@ -1,0 +1,46 @@
+{
+    "mode": "All",
+    "policyRule": {
+      "if": {
+        "allOf": [
+          {
+            "field": "type",
+            "equals": "Microsoft.Resources/subscriptions/resourceGroups"
+          },
+          {
+            "anyOf": [
+              {
+                "field": "[concat('tags[', parameters('tagName'), ']')]",
+                "exists": "false"
+              },
+              {
+                "not": {
+                  "field": "[concat('tags[', parameters('tagName'), ']')]",
+                  "in": "[parameters('tagValues')]"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "then": {
+        "effect": "deny"
+      }
+    },
+    "parameters": {
+      "tagName": {
+        "type": "String",
+        "metadata": {
+          "displayName": "Tag Name",
+          "description": "Name of the tag that must be applied to the resource group."
+        }
+      },
+      "tagValues": {
+        "type": "Array",
+        "metadata": {
+          "displayName": "Tag Value",
+          "description": "Allowed tag values for the tag specified in the 'Tag Name' parameter."
+        }
+      }
+    }
+  }
