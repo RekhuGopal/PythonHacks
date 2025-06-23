@@ -1,0 +1,5 @@
+az datafactory pipeline create-run `
+  --resource-group costoptimizationsas `
+  --factory-name testadfdemo12345 `
+  --name TestCopy `
+  --parameters .\params.json
