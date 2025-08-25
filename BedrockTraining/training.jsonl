@@ -1,0 +1,12 @@
+{"messages":[{"role":"user","content":"Hello"},{"role":"assistant","content":"Salut"}]}
+{"messages":[{"role":"user","content":"Goodbye"},{"role":"assistant","content":"À plus"}]}
+{"messages":[{"role":"user","content":"How are you?"},{"role":"assistant","content":"Ça va"}]}
+{"messages":[{"role":"user","content":"See you tomorrow"},{"role":"assistant","content":"À demain"}]}
+{"messages":[{"role":"user","content":"Thank you very much"},{"role":"assistant","content":"Merci beaucoup"}]}
+{"messages":[{"role":"user","content":"What time is it?"},{"role":"assistant","content":"Il est quelle heure"}]}
+{"messages":[{"role":"user","content":"I am hungry"},{"role":"assistant","content":"J’ai faim"}]}
+{"messages":[{"role":"user","content":"I am tired"},{"role":"assistant","content":"Je suis fatigué"}]}
+{"messages":[{"role":"user","content":"It is raining"},{"role":"assistant","content":"Il pleut"}]}
+{"messages":[{"role":"user","content":"See you soon"},{"role":"assistant","content":"À bientôt"}]}
+{"messages":[{"role":"user","content":"Where is the station?"},{"role":"assistant","content":"Où est la gare"}]}
+{"messages":[{"role":"user","content":"I love learning languages"},{"role":"assistant","content":"J’adore apprendre les langues"}]}
