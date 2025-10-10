@@ -1,0 +1,54 @@
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: always
+    - if: $CI_COMMIT_BRANCH != "main" && $CI_PIPELINE_SOURCE != "merge_request_event"
+      when: never
+    - when: always
+
+stages:
+  - validate
+  - plan
+  - apply
+
+default:
+  image:
+    name: hashicorp/terraform:latest
+    entrypoint:
+      - /usr/bin/env
+      - "PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+
+  before_script:
+    - cd terraform
+    - env
+    - terraform init
+  cache:
+    key: $CI_COMMIT_REF_SLUG
+    paths:
+      - terraform/.terraform/
+
+terraform_validate:
+  stage: validate
+  script:
+    - terraform validate
+
+terraform_plan:
+  stage: plan
+  script: 
+    - terraform plan -var-file="variables.tfvars" -out=tfplan 
+  artifacts:
+    name: "terraform-plan-$CI_COMMIT_REF_NAME"
+    paths:
+      - terraform/tfplan
+
+terraform_apply:
+  stage: apply
+  dependencies:
+    - terraform_plan
+  script:
+    - terraform apply --auto-approve tfplan
+  when: manual
+  allow_failure: false
+  only:
+    refs:
+      - main
