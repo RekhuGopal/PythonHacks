@@ -1,0 +1,14 @@
+# bedrock-agentcore-starter-toolkit
+pip install bedrock-agentcore-starter-toolkit
+
+# Configure your agent
+agentcore configure --entrypoint agent_example.py
+
+# Optional: Local testing (requires Docker, Finch, or Podman)
+agentcore launch --local
+
+# Deploy to AWS
+agentcore launch
+
+# Test your agent with CLI
+agentcore invoke '{"prompt": "Hello"}'
