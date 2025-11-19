@@ -1,0 +1,1 @@
+python -m streamlit run 01-text-generation.py
