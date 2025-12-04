@@ -1,0 +1,2 @@
+variable "General" {}
+variable "Policies" {}

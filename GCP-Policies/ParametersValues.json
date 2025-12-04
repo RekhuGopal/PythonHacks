@@ -1,0 +1,16 @@
+{
+    "General" : {
+        "ENV" : {
+            "Name" : "Prod",
+            "ShortName" : "PRD"
+        },
+
+        "TFBackend" : {
+            "project_id" : "cloud-quick-labs",
+            "region" :"us-east1"
+        }
+    },
+    "Policies" : {
+        "policy1target":"cloud-quick-labs"
+    }
+}

@@ -1,0 +1,149 @@
+name: GCP-IAC-ADO-Pipeline
+trigger:
+  branches:
+    include: 
+      - develop
+      - release
+      - master
+
+variables:
+  foldervalue: 'GCP-Policies'
+
+stages:
+- stage: TF_Plan
+  displayName: 'Terraform Plan Stage'
+  condition: and(ne(variables['Build.SourceBranch'], 'refs/heads/release'), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: Plan
+    displayName: 'TF Plan For GCP'
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - group: 'GCP-Pipeline'
+    steps:
+      - checkout: self
+
+      - task: DownloadSecureFile@1
+        name: GCPAuth
+        inputs:
+          secureFile: 'cloud-quick-labs-fc38a1761a94.json'
+      
+      - task: TerraformInstaller@1
+        displayName: 'Install TF'
+        inputs:
+          terraformVersion: '1.8.4'
+
+      - script: |
+          echo "Setting up GCP  Auth.."
+          export GOOGLE_APPLICATION_CREDENTIALS=$(GCPAuth.secureFilePath)
+          gcloud auth activate-service-account --key-file=$(GCPAuth.secureFilePath)
+          gcloud config set project $(GCP_PROJECT_ID)
+          gcloud storage buckets list --project=$(GCP_PROJECT_ID)
+        displayName: 'Auth GCP With CLI'
+
+      - script: |
+          cd $(foldervalue)
+          terraform init \
+            -backend-config="bucket=$(GCP_TFSTATE_BUCKET)" \
+            -backend-config="prefix=gcp-Policies" \
+            -backend-config="credentials=$(GCPAuth.secureFilePath)"
+        displayName: 'TF Init'
+
+      - script: |
+          cd $(foldervalue)
+          terraform validate
+        displayName : 'TF Validate'
+      
+      - script: |
+          export GOOGLE_APPLICATION_CREDENTIALS=$(GCPAuth.secureFilePath)
+          cd $(foldervalue)
+          terraform plan -var-file=ParametersValues.json -out=tfplan 
+        displayName: 'TF Plan'
+
+- stage: TF_Apply
+  displayName: 'Terraform Apply Stage'
+  dependsOn: TF_Plan
+  condition: succeeded('TF_Plan')
+  jobs:
+  - deployment: Apply
+    displayName: 'Terraform Apply'
+    environment: 'GCP-Approvers'
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - group: 'GCP-Pipeline'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+            - checkout: self
+
+            - task: DownloadSecureFile@1
+              name: GCPAuth
+              inputs:
+                secureFile: 'cloud-quick-labs-fc38a1761a94.json'
+            
+            - task: TerraformInstaller@1
+              displayName: 'Install TF'
+              inputs:
+                terraformVersion: '1.8.4'
+
+            - script: |
+                echo "Setting up GCP  Auth.."
+                export GOOGLE_APPLICATION_CREDENTIALS=$(GCPAuth.secureFilePath)
+                gcloud auth activate-service-account --key-file=$(GCPAuth.secureFilePath)
+                gcloud config set project $(GCP_PROJECT_ID)
+                gcloud storage buckets list --project=$(GCP_PROJECT_ID)
+              displayName: 'Auth GCP With CLI'
+
+            - script: |
+                cd $(foldervalue)
+                terraform init \
+                  -backend-config="bucket=$(GCP_TFSTATE_BUCKET)" \
+                  -backend-config="prefix=gcp-Policies" \
+                  -backend-config="credentials=$(GCPAuth.secureFilePath)"
+              displayName: 'TF Init'
+
+            - script: |
+                cd $(foldervalue)
+                terraform validate
+              displayName : 'TF Validate'
+            
+            - script: |
+                export GOOGLE_APPLICATION_CREDENTIALS=$(GCPAuth.secureFilePath)
+                cd $(foldervalue)
+                terraform plan -var-file=ParametersValues.json -out=tfplan 
+              displayName: 'TF Plan'
+
+            - script: |
+                export GOOGLE_APPLICATION_CREDENTIALS=$(GCPAuth.secureFilePath)
+                cd $(foldervalue)
+                terraform apply -auto-approve tfplan 
+              displayName: 'TF Apply'
+
+            - task: UsePythonVersion@0
+              displayName : 'Set Python Version 3.11'
+              inputs:
+                versionSpec: '3.11'
+                architecture: 'x64'
+
+            - task: Bash@3
+              displayName: 'Install PIP Package'
+              inputs:
+                targetType: 'inline'
+                script: |
+                  python -m pip install --upgrade pip
+                  pip install -r ./requirements.txt
+                workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+
+            - task: Bash@3
+              displayName : 'Pytest Cases Execution'
+              inputs:
+                targetType: 'inline'
+                script: |
+                  pytest $(Build.SourcesDirectory)/$(foldervalue)/GCPTestExecutions --junitxml=$(Build.SourcesDirectory)/junit/test-results.xml --cov=$(Build.SourcesDirectory)/$(foldervalue)/GCPTestCases --cov-report=xml
+                workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)/GCPTestExecutions'
+              env:
+                GCPCredFilePath : $(GCPAuth.secureFilePath)
+                GCPENV: $(Env)
+                GCPProjectID : $(GCPProjectID)

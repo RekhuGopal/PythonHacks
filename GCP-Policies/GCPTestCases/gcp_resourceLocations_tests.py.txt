@@ -1,0 +1,46 @@
+def gcp_check_if_location_is_allowed(orgpolicy_client, project_id, location):
+    """
+    Checks if a GCP location is allowed based on gcp.resourceLocations
+    using OrgPolicy API v2 for a PROJECT.
+    """
+
+    try:
+        policy_name = f"projects/{project_id}/policies/gcp.resourceLocations"
+
+        # Fetch policy from project
+        policy = (
+            orgpolicy_client.projects()
+            .policies()
+            .get(name=policy_name)
+            .execute()
+        )
+
+        # No rules → unrestricted
+        if "spec" not in policy or "rules" not in policy["spec"]:
+            print("No rules found → unrestricted")
+            return True
+
+        allowed_values = []
+
+        # Extract allowed values from rules
+        for rule in policy["spec"]["rules"]:
+            if "values" in rule and "allowedValues" in rule["values"]:
+                allowed_values.extend(rule["values"]["allowedValues"])
+
+        # No allowedValues → unrestricted
+        if not allowed_values:
+            print("No allowedValues → unrestricted")
+            return True
+
+        # Normalize values (remove “in:” prefix)
+        simplified = [
+            v.replace("in:", "").replace("-locations", "").strip().lower()
+            for v in allowed_values
+        ]
+
+        # Final check
+        return location.lower() in simplified
+
+    except Exception as e:
+        print(f"Exception checking allowed GCP locations: {e}")
+        return False

@@ -1,0 +1,66 @@
+import os
+import pytest
+from googleapiclient import discovery
+from google.oauth2 import service_account
+from GCPTestCases.gcp_resourceLocations_tests import gcp_check_if_location_is_allowed
+
+
+# ================================
+# Read environment variables
+# ================================
+
+GCPEnv = os.environ.get("GCPENV")
+GCPProjectID = os.environ.get("GCPProjectID")
+GCPCredFilePath = os.environ.get("GCPCredFilePath")
+
+if not GCPEnv or not GCPProjectID or not GCPCredFilePath :
+    raise ValueError("Missing required variables: GCPENV, GCPProjectID, GCPCredFilePath")
+
+
+# ================================
+# Load credentials
+# ================================
+
+creds = service_account.Credentials.from_service_account_file(
+    GCPCredFilePath,
+    scopes=["https://www.googleapis.com/auth/cloud-platform"],
+)
+
+# Org Policy API client
+orgpolicy_client = discovery.build(
+    "orgpolicy", 
+    "v2", 
+    credentials=creds, 
+    cache_discovery=False
+)
+
+
+# ================================
+# Allowed Locations Per Environment
+# ================================
+
+if GCPEnv == "SBX":
+    AllowedLocations = ["us-east1", "us-east4"]
+
+elif GCPEnv == "NPD":
+    AllowedLocations = ["us-east1", "us-east4"]
+
+elif GCPEnv == "PRD":
+    AllowedLocations = ["us-east1", "us-east4"]
+
+else:
+    raise ValueError("Invalid GCPENV value (SBX, NPD, PRD expected)")
+
+
+# ================================
+# Pytest Test Cases
+# ================================
+
+@pytest.mark.parametrize("location", AllowedLocations)
+def test_gcp_location_policy_allows_creation(location):
+    """
+    Tests whether a given GCP region is allowed 
+    based on gcp.resourceLocations org/folder policies.
+    """
+    result = gcp_check_if_location_is_allowed(orgpolicy_client, GCPCredFilePath, location)
+    assert result == True
