@@ -1,0 +1,2 @@
+Provider URL : https://vstoken.dev.azure.com/{OrganizationGUID}
+Audience : api://AzureADTokenExchange
