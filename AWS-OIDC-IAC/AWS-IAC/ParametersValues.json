@@ -1,0 +1,18 @@
+{
+    "General" : {
+        "ENV" : {
+            "Name" : "Development",
+            "ShortName" : "Dev"
+        },
+
+        "TFBackend" : {
+            "bucket" : "databucketsourceside",
+            "dynamodb_table" : "testdynamotable",
+            "region" :"us-west-2"
+        }
+    },
+    "Variables" : {
+        "enable_versioning":true,
+        "bucketname":"testdemobucket54321"
+    }
+}

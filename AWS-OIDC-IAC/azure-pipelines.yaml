@@ -1,0 +1,182 @@
+name: AWS-IAC-ADO-Pipeline
+
+trigger:
+  branches:
+    include:
+      - develop
+      - release
+      - master
+
+variables:
+  foldervalue: 'AWS-IAC'
+  aws.rolecredential.maxduration: "3600" # Can be set from 900 - 43200s
+  
+
+# ===============================
+# Terraform PLAN Stage
+# ===============================
+stages:
+- stage: TF_Plan
+  displayName: 'Terraform Plan Stage'
+  condition: and(ne(variables['Build.SourceBranch'], 'refs/heads/release'), ne(variables['Build.SourceBranch'], 'refs/heads/master'))
+  jobs:
+  - job: Plan
+    displayName: 'TF Plan For AWS'
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - group: 'AWS-Pipeline'
+
+    steps:
+    - checkout: self
+
+    - task: TerraformInstaller@1
+      displayName: 'Install Terraform'
+      inputs:
+        terraformVersion: '1.8.4'
+
+    # Validate OIDC Authentication
+    - task: AWSCLI@1
+      displayName: 'Validate AWS OIDC Authentication'
+      inputs:
+        awsCredentials: 'aws-odic-sc'
+        regionName: '$(AWS_REGION)'
+        awsCommand: 'sts'
+        awsSubCommand: 'get-caller-identity'
+
+    # Terraform Init (S3 + DynamoDB Backend)
+    - task: AWSShellScript@1
+      displayName: Terraform Init (OIDC)
+      inputs:
+        awsCredentials: 'aws-odic-sc'
+        regionName: '$(AWS_REGION)'
+        scriptType: 'inline'
+        inlineScript: |
+          cd $(foldervalue)
+          terraform init \
+            -backend-config="bucket=$(TFSTATE_BUCKET)" \
+            -backend-config="key=aws-backend/terraform.tfstate" \
+            -backend-config="region=$(AWS_REGION)" \
+            -backend-config="dynamodb_table=$(TFSTATE_DDB_TABLE)" \
+            -backend-config="encrypt=true"
+
+    - script: |
+        cd $(foldervalue)
+        terraform validate
+      displayName: 'TF Validate'
+
+    - task: AWSShellScript@1
+      displayName: Terraform Plan
+      inputs:
+        awsCredentials: 'aws-odic-sc'
+        regionName: '$(AWS_REGION)'
+        scriptType: 'inline'
+        inlineScript: |
+          cd $(foldervalue)
+          terraform plan \
+            -var-file=ParametersValues.json \
+            -out=tfplan
+
+- stage: TF_Apply
+  displayName: 'Terraform Apply Stage'
+  dependsOn: TF_Plan
+  condition: succeeded('TF_Plan')
+
+  jobs:
+  - deployment: Apply
+    displayName: 'Terraform Apply'
+    environment: 'AWS-Approvers'
+    pool:
+      vmImage: 'ubuntu-latest'
+    variables:
+      - group: 'AWS-Pipeline'
+
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - checkout: self
+
+          - task: TerraformInstaller@1
+            displayName: 'Install Terraform'
+            inputs:
+              terraformVersion: '1.8.4'
+
+          - task: AWSCLI@1
+            displayName: 'Validate AWS OIDC Authentication'
+            inputs:
+              awsCredentials: 'aws-odic-sc'
+              regionName: '$(AWS_REGION)'
+              awsCommand: 'sts'
+              awsSubCommand: 'get-caller-identity'
+
+          - task: AWSShellScript@1
+            displayName: Terraform Init (OIDC)
+            inputs:
+              awsCredentials: 'aws-odic-sc'
+              regionName: '$(AWS_REGION)'
+              scriptType: 'inline'
+              inlineScript: |
+                cd $(foldervalue)
+                terraform init \
+                  -backend-config="bucket=$(TFSTATE_BUCKET)" \
+                  -backend-config="key=aws-backend/terraform.tfstate" \
+                  -backend-config="region=$(AWS_REGION)" \
+                  -backend-config="dynamodb_table=$(TFSTATE_DDB_TABLE)" \
+                  -backend-config="encrypt=true"
+
+          - script: |
+              cd $(foldervalue)
+              terraform validate
+            displayName: 'TF Validate'
+
+          - task: AWSShellScript@1
+            displayName: Terraform Plan
+            inputs:
+              awsCredentials: 'aws-odic-sc'
+              regionName: '$(AWS_REGION)'
+              scriptType: 'inline'
+              inlineScript: |
+                cd $(foldervalue)
+                terraform plan \
+                  -var-file=ParametersValues.json \
+                  -out=tfplan
+
+          - task: AWSShellScript@1
+            displayName: Terraform Apply
+            inputs:
+              awsCredentials: 'aws-odic-sc'
+              regionName: '$(AWS_REGION)'
+              scriptType: 'inline'
+              inlineScript: |
+                cd $(foldervalue)
+                terraform apply -auto-approve tfplan
+
+          - task: UsePythonVersion@0
+            displayName: 'Set Python Version 3.11'
+            inputs:
+              versionSpec: '3.11'
+              architecture: 'x64'
+
+          - task: Bash@3
+            displayName: 'Install Python Dependencies'
+            inputs:
+              targetType: 'inline'
+              script: |
+                python -m pip install --upgrade pip
+                pip install -r requirements.txt
+              workingDirectory: '$(Build.SourcesDirectory)/$(foldervalue)'
+
+          - task: Bash@3
+            displayName: 'Pytest Execution'
+            inputs:
+              targetType: 'inline'
+              script: |
+                pytest \
+                  $(Build.SourcesDirectory)/$(foldervalue)/AWSTestExecutions \
+                  --junitxml=$(Build.SourcesDirectory)/junit/test-results.xml \
+                  --cov=$(Build.SourcesDirectory)/$(foldervalue)/AWSTestCases \
+                  --cov-report=xml
+            env:
+              AWS_REGION: $(AWS_REGION)
+              ENV: $(ENV)

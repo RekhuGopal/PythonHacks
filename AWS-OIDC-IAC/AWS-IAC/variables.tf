@@ -1,0 +1,3 @@
+variable "General" {}
+
+variable "Variables" {}

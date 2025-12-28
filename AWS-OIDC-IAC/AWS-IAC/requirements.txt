@@ -1,0 +1,9 @@
+# Testing
+pytest
+pytest-cov
+pytest-azurepipelines
+unittest-xml-reporting
+
+# AWS SDK
+boto3
+botocore
